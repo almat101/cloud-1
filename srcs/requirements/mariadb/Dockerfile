@@ -18,7 +18,7 @@ RUN chmod +x /usr/local/bin/maria.sh
 # Initialize MariaDB data directory
 RUN mkdir -p /var/lib/mysql && \
     chown -R mysql:mysql /var/lib/mysql && \
-    mysql_install_db --user=mysql --datadir=/var/lib/mysql
+    mariadb-install-db --user=mysql --datadir=/var/lib/mysql
 
 # Run the startup script
 CMD ["/usr/local/bin/maria.sh"]

@@ -1,8 +1,7 @@
 #!/bin/sh
 
 echo "Waiting for mariadb..."
-until mariadb -h "$MARIA_DB" -u "$MARIA_USER" -p"$MARIA_PASSWORD" "$MARIA_DB_NAME" -e "SELECT 1;"; do
-# >/dev/null 2>&1; do
+until mariadb -h "$MARIA_DB" -u "$MARIA_USER" -p"$MARIA_PASSWORD" "$MARIA_DB_NAME" -e "SELECT 1;" >/dev/null 2>&1; do
   echo "Waiting for database connection..."
   sleep 2
 done

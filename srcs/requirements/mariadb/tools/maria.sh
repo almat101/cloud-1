@@ -2,7 +2,15 @@
 #start mariadbd-safe in the background
 mariadbd-safe &
 
-sleep 5
+# Wait for MariaDB to be ready
+echo "Waiting for MariaDB to initialize..."
+until mariadb-admin ping -h"127.0.0.1" -P3306 -u root --password=${MARIA_ROOT_PASSWORD} --silent; do
+    echo "Still waiting for MariaDB to be ready..."
+    sleep 1
+done
+echo "MariaDB is ready"
+
+# sleep 5
 # Create the table
 echo "Create the table"
 mariadb -u root -p"${MARIA_ROOT_PASSWORD}" -e "CREATE DATABASE IF NOT EXISTS \`${MARIA_DB_NAME}\`;"
