@@ -10,9 +10,12 @@ services:
     restart: always
     volumes:
       - wordpress:/var/www/html
+      - phpmyadmin:/var/www/phpmyadmin
     depends_on:
       wordpress:
         condition: service_healthy
+      phpmyadmin:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
@@ -62,6 +65,25 @@ services:
       retries: 3
     networks:
       - cloud-1
+    
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    build:
+      context: requirements/phpmyadmin
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+    - BLOWFISH_SECRET=${BLOWFISH_SECRET}
+    restart: always
+    volumes:
+      - phpmyadmin:/var/www/phpmyadmin
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - cloud-1
 
 networks:
   cloud-1:
@@ -70,3 +92,4 @@ networks:
 volumes:
   wordpress:
   mariadb_data:
+  phpmyadmin:
