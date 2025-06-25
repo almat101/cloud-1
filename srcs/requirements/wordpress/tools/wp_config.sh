@@ -37,46 +37,14 @@ if ! test -f "/var/www/html/wp-config.php"; then
 				--allow-root \
 				--path='/var/www/html'
 
-	# Insert Redis configuration before the "Happy publishing" line
-	# this line is before require_once(ABSPATH . 'wp-settings.php'); for making sure that the Redis configuration is loaded before the WordPress object cache is initialized.
-	# echo "Inserting Redis configuration to wp-config.php"
-	# sed -i "/\/\* That's all, stop editing! Happy publishing. \*\//i \\
-	# // Redis Object Cache Configuration \n\
-	# define('WP_REDIS_HOST', 'redis'); \n\
-	# define('WP_REDIS_PORT', 6379); \n\
-	# define('WP_CACHE', true); \n" /var/www/html/wp-config.php
-
-	# Install the Redis plugin
-	# wp plugin install redis-cache --activate --allow-root
-
-    # # Enable Redis cache via WP-CLI
-    # wp redis enable --allow-root
-
-    # # Check Redis connection status
-    # wp redis status --allow-root
-
-    # # Configure Redis cache settings
-    # wp config set WP_REDIS_HOST "redis" --allow-root
-	# # this line ensure that WordPress connects to the Redis container within the same Docker Compose network, making inter-container communication possible.
-    # wp config set WP_REDIS_PORT "6379" --allow-root
-	# # redis standard port
-    # wp config set WP_REDIS_DATABASE "15" --allow-root
-	# # database 15 is used for object cache
-	# wp config set WP_REDIS_MAXTTL "86400" --allow-root
-	# 24 hours
-
-	#gives the right permissions to the files and directory for wordpress,nginx and redis
-	# find /var/www/html -type d -exec chmod 755 {} \;
-	# find /var/www/html -type f -exec chmod 644 {} \;
-	# chown -R www-data:www-data /var/www/html
-
-	# Create the uploads directory for the FTP user
-	# echo "Create the uploads directory for the FTP user"
-	# # echo $FTP_USER
-	# id -u $FTP_USER &>/dev/null || useradd -m $FTP_USER
-	# mkdir -p /var/www/html/uploads
-	# chown -R $FTP_USER:www-data /var/www/html/uploads
-	# chmod 775 /var/www/html/uploads
+	# After wp is installed, update the site URL settings
+	if [ "$DOMAIN_NAME" = "cloud-1.alematta.com" ]; then
+		echo "Updating WordPress site URL settings..."
+		wp option update siteurl "https://cloud-1.alematta.com" --allow-root
+		wp option update home "https://cloud-1.alematta.com" --allow-root
+	else
+		echo "DOMAIN_NAME is set to '$DOMAIN_NAME', skipping site URL update."
+	fi
 
 	echo "wp-config.php created!"
 else

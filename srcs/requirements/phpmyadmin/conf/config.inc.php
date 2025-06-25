@@ -117,4 +117,8 @@ $cfg['ShowPhpInfo'] = false; // Disable phpinfo() output for security
 $cfg['Import']['charset'] = 'utf-8';
 $cfg['Export']['charset'] = 'utf-8';
 $cfg['Export']['method'] = 'quick';
+
+// Set base URL to maintain correct paths
+$cfg['PmaAbsoluteUri'] = 'http://' . $_SERVER['HTTP_HOST'] . '/phpmyadmin/';
+
 ?>

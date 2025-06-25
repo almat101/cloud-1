@@ -14,11 +14,21 @@ http {
     access_log /var/log/nginx/access.log;
     error_log /var/log/nginx/error.log;
 
+    #Default server
+    server {
+        listen 80;
+        listen [::]:80;
+        server_name _;
+        
+        return 444;  # Connection closed
+    }
+
     server {
 		listen 80;
 		listen [::]:80;
 
-		server_name localhost;
+		server_name ${DOMAIN_NAME};
+        # server_name localhost;
 
 		index index.php index.html index.htm;
 
@@ -36,17 +46,31 @@ http {
             fastcgi_index index.php;
     	}
 
+        #redirection for phpmyadmin
+        location = /phpmyadmin {
+            return 301 $scheme://$host/phpmyadmin/;
+        }
+
 		# phpMyAdmin configuration 
         location /phpmyadmin/ {
+            # Environment variable to control access on pma
+            set $pma_access "${PMA_ACCESSIBLE}";
+            if ($pma_access != "true") {
+                return 403;
+            }
+
             alias /var/www/phpmyadmin/;
-            index index.php;
+            index index.php index.html;
             
             # PHP handler for phpMyAdmin
             location ~ ^/phpmyadmin/(.+\.php)$ {
-                alias /var/www/phpmyadmin/$1;
-                include fastcgi_params;
+                try_files $uri =404;
+                fastcgi_split_path_info ^/phpmyadmin/(.+\.php)(.*)$;
                 fastcgi_pass phpmyadmin:9000;
-                fastcgi_param SCRIPT_FILENAME $request_filename;
+                fastcgi_index index.php;
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME /var/www/phpmyadmin/$1;
+                fastcgi_param PATH_INFO $fastcgi_path_info;
             }
             
             # Static files for phpMyAdmin

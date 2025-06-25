@@ -4,7 +4,7 @@ FROM alpine:3.21
 ARG PMA_VERSION=5.2.2
 
 RUN apk update && \
-    apk add --no-cache vim curl wget php84 php84-fpm php84-session php84-mysqli \
+    apk add --no-cache netcat-openbsd vim curl wget php84 php84-fpm php84-session php84-mysqli \
     php84-mbstring php84-json php84-zip php84-gd php84-xml php84-curl php84-ctype php84-iconv \
     php84-openssl php84-tokenizer php84-phar php84-fileinfo php84-sodium unzip
 
