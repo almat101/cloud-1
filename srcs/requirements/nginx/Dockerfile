@@ -5,7 +5,7 @@ RUN addgroup -S -g 101 nginx && \
     adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx nginx
 
 RUN apk update && \
-    apk add --no-cache gettext curl nginx && \
+    apk add --no-cache openssl gettext curl nginx && \
     # Create basic directories
     mkdir -p /var/run/nginx && \
     mkdir -p /var/log/nginx && \
@@ -13,6 +13,8 @@ RUN apk update && \
     # Create symlinks for logs to stdout/stderr 
     ln -sf /dev/stdout /var/log/nginx/access.log && \
     ln -sf /dev/stderr /var/log/nginx/error.log
+
+# RUN mkdir -p /etc/nginx/ssl
 
 COPY --chown=nginx:nginx conf/nginx.conf.template /etc/nginx/nginx.conf.template
 COPY --chown=nginx:nginx tools/entrypoint.sh /entrypoint.sh

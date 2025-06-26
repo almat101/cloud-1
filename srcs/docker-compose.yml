@@ -7,10 +7,8 @@ services:
     build:
       context: requirements/nginx
       dockerfile: Dockerfile
-    # ports:
-    #   - "80:80"
-    expose:
-      - 80
+    ports:
+        - "${PORT}:${PORT}"
     restart: always
     volumes:
       - wordpress:/var/www/html
@@ -22,6 +20,8 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f -H \"host:${DOMAIN_NAME}\" http://localhost/health || exit 1"]
+      # test: ["CMD-SHELL", "curl -f -k https://localhost/health || exit 1"]
+      # test: ["CMD-SHELL", "if [ \"${PORT}\" = \"443\" ]; then curl -f -k https://localhost/health || exit 1; else curl -f -H \"Host:${DOMAIN_NAME}\" http://localhost/health || exit 1; fi"]
       interval: 30s
       timeout: 10s
       retries: 3

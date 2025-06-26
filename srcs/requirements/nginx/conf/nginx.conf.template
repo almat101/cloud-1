@@ -24,11 +24,12 @@ http {
     }
 
     server {
-		listen 80;
-		listen [::]:80;
+        listen ${PORT}${SSL_SUFFIX};
+        listen [::]:${PORT}${SSL_SUFFIX};
 
-		server_name ${DOMAIN_NAME};
-        # server_name localhost;
+        server_name ${DOMAIN_NAME};
+
+        ${SSL_CONFIG}
 
 		index index.php index.html index.htm;
 
