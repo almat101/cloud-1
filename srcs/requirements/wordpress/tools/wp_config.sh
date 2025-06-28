@@ -9,6 +9,11 @@ echo "Database connection established!"
 
 cd /var/www/html
 
+#This lines is required if I dont use cloudeflared tunnel
+echo "Giving permission to files"
+find /var/www/html -type d -exec chmod 755 {} \;
+find /var/www/html -type f -exec chmod 644 {} \;
+
 # Create a new wp-config.php file via wp-cli
 if ! test -f "/var/www/html/wp-config.php"; then
 	echo "Create a new wp-config.php file via wp-cli"
@@ -38,10 +43,10 @@ if ! test -f "/var/www/html/wp-config.php"; then
 				--path='/var/www/html'
 
 	# After wp is installed, update the site URL settings
-	if [ "$DOMAIN_NAME" = "cloud-1.alematta.com" ]; then
+	if [ "$DOMAIN_NAME" = "cloud1.alematta.com" ]; then
 		echo "Updating WordPress site URL settings..."
-		wp option update siteurl "https://cloud-1.alematta.com" --allow-root
-		wp option update home "https://cloud-1.alematta.com" --allow-root
+		wp option update siteurl "https://cloud1.alematta.com" --allow-root
+		wp option update home "https://cloud1.alematta.com" --allow-root
 	else
 		echo "DOMAIN_NAME is set to '$DOMAIN_NAME', skipping site URL update."
 	fi

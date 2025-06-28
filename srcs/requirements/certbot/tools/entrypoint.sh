@@ -1,0 +1,203 @@
+#!/bin/sh
+
+set -e
+
+echo "=== Using Cloudflare DNS Challenge ==="
+echo "Domain: $DOMAIN_NAME"
+echo "Email: $EMAIL"
+
+
+# Check if this is for localhost/local development
+if [ "$DOMAIN_NAME" = "localhost" ] || [ "$DOMAIN_NAME" = "127.0.0.1" ]; then
+    echo "Local development detected - generating self-signed certificate"
+    
+    # Create directory if it doesn't exist
+    mkdir -p "/etc/letsencrypt/live/$DOMAIN_NAME"
+    
+    # Generate self-signed certificate
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout "/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem" \
+        -out "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem" \
+        -subj "/C=US/ST=State/L=City/O=Dev/CN=$DOMAIN_NAME"
+    
+    # Set proper permissions
+    chmod 600 "/etc/letsencrypt/live/$DOMAIN_NAME/privkey.pem"
+    chmod 644 "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem"
+    
+    echo "✓ Self-signed certificate generated for local development"
+    
+else
+    echo "Production domain detected - using Let's Encrypt"
+fi    
+
+# Create credentials file using API token
+cat > /tmp/cloudflare.ini << EOF
+dns_cloudflare_api_token = ${CLOUDFLARE_API_TOKEN}
+EOF
+
+chmod 600 /tmp/cloudflare.ini
+
+# Check if certificate already exists
+if [ -f "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem" ]; then
+    echo "Certificate already exists for $DOMAIN_NAME"
+    echo "Checking if renewal is needed..."
+    
+    certbot renew --dns-cloudflare --dns-cloudflare-credentials /tmp/cloudflare.ini --quiet
+    
+else
+    echo "Generating new certificate for $DOMAIN_NAME using DNS challenge..."
+    
+    # Generate certificate using DNS challenge
+    # certbot certonly \
+    #     --dns-cloudflare \
+    #     --dns-cloudflare-credentials /tmp/cloudflare.ini \
+    #     --email "$EMAIL" \
+    #     --agree-tos \
+    #     --no-eff-email \
+    #     --non-interactive \
+    #     -d "$DOMAIN_NAME"
+
+    #TODO change DNS 
+    #TODO Add --staging flag for testing this is the safe approach to avoid rate limiting
+    certbot certonly \
+        --dns-cloudflare \
+        --dns-cloudflare-credentials /tmp/cloudflare.ini \
+        --email "$EMAIL" \
+        --agree-tos \
+        --no-eff-email \
+        --non-interactive \
+        --staging \
+        -d "$DOMAIN_NAME"
+    
+    if [ $? -eq 0 ]; then
+        echo "✓ Certificate generated successfully!"
+        ls -la "/etc/letsencrypt/live/$DOMAIN_NAME/"
+        
+        # Create SSL config file for nginx
+        cat > /etc/letsencrypt/ssl.conf << 'EOF'
+# SSL configuration is now available
+# This file indicates certificates are ready
+EOF
+        
+    else
+        echo "✗ Certificate generation failed!"
+        exit 1
+    fi
+fi
+
+echo "=== Certificate process completed ==="
+
+# #!/bin/sh
+
+# set -e
+# set -x
+# set -u
+
+# echo "=== Using Cloudflare DNS Challenge ==="
+# echo "Domain: $DOMAIN_NAME"
+# echo "Email: $EMAIL"
+
+# # Create credentials file using API token (more secure)
+# cat > /tmp/cloudflare.ini << EOF
+# dns_cloudflare_api_token = ${CLOUDFLARE_API_TOKEN}
+# EOF
+
+# chmod 600 /tmp/cloudflare.ini
+
+# # Check if certificate already exists
+# if [ -f "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem" ]; then
+#     echo "Certificate already exists for $DOMAIN_NAME"
+#     echo "Checking if renewal is needed..."
+    
+#     certbot renew --dns-cloudflare --dns-cloudflare-credentials /tmp/cloudflare.ini --quiet
+    
+# else
+#     echo "Generating new certificate for $DOMAIN_NAME using DNS challenge..."
+    
+#     # Generate certificate using DNS challenge
+#     certbot certonly \
+#         --dns-cloudflare \
+#         --dns-cloudflare-credentials /tmp/cloudflare.ini \
+#         --email "$EMAIL" \
+#         --agree-tos \
+#         --no-eff-email \
+#         --non-interactive \
+#         -d "$DOMAIN_NAME"
+    
+#     if [ $? -eq 0 ]; then
+#         echo "✓ Certificate generated successfully!"
+#         ls -la "/etc/letsencrypt/live/$DOMAIN_NAME/"
+#     else
+#         echo "✗ Certificate generation failed!"
+#         exit 1
+#     fi
+# fi
+
+# echo "=== Certificate process completed ==="
+# tail -f /dev/null
+
+
+# #!/bin/sh
+
+# # Certbot entrypoint script
+# set -e
+# set -x
+# set -u
+
+
+# echo "=== Certbot Container Started ==="
+# echo "Domain: $DOMAIN_NAME"
+# echo "Email: $EMAIL"
+
+# # Wait for nginx to be ready
+# echo "Waiting for nginx to be ready..."
+# sleep 30
+
+# # Check if certificate already exists
+# if [ -f "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem" ]; then
+#     echo "Certificate already exists for $DOMAIN_NAME"
+#     echo "Checking if renewal is needed..."
+    
+#     # Try to renew (will only renew if needed)
+#     certbot renew --webroot --webroot-path=/var/www/certbot --quiet
+    
+#     if [ $? -eq 0 ]; then
+#         echo "Certificate renewal check completed"
+#     else
+#         echo "Certificate renewal failed"
+#     fi
+# else
+#     echo "Generating new certificate for $DOMAIN_NAME..."
+    
+#     # Generate new certificate
+#     certbot certonly \
+#         --webroot \
+#         --webroot-path=/var/www/certbot \
+#         --email "$EMAIL" \
+#         --agree-tos \
+#         --no-eff-email \
+#         --non-interactive \
+#         -d "$DOMAIN_NAME"
+    
+#     if [ $? -eq 0 ]; then
+#         echo "✓ Certificate generated successfully!"
+        
+#         # List certificate files
+#         echo "Certificate files:"
+#         ls -la "/etc/letsencrypt/live/$DOMAIN/"
+        
+#         # Show certificate info
+#         echo "Certificate expires:"
+#         openssl x509 -in "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" -text -noout | grep "Not After" || echo "Could not read expiry date"
+        
+#     else
+#         echo "✗ Certificate generation failed!"
+#         exit 1
+#     fi
+# fi
+
+# echo "=== Certificate process completed ==="
+# echo "Keeping container alive for future renewals..."
+
+# # Keep container running
+# tail -f /dev/null
