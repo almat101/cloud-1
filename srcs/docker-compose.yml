@@ -114,7 +114,6 @@ services:
       - .env
     volumes:
       - certs:/etc/letsencrypt
-    # entrypoint: /bin/sh /entrypoint.sh
     networks:
       - cloud-1
     restart: 'no'

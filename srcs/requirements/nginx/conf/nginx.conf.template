@@ -56,6 +56,34 @@ http {
 
 		root /var/www/html;
         
+        # Protect wp-admin and wp-login.php with IP restrictions
+        location ~ ^/(wp-admin|wp-login\.php) {
+            
+            # Allow only these specific IPs
+            # allow 82.55.232.67;     # Home IP
+            allow 172.18.0.0/16;    # Docker network
+            # allow 127.0.0.1;        # Localhost
+            # allow 151.13.27.220;    # 42 IP
+            deny all;               # Block all other IPs
+            
+            # Environment variable to control access 
+            set $wp_admin_access "${WP_ADMIN_ACCESSIBLE}";
+            if ($wp_admin_access != "true") {
+                return 403;
+            }
+
+            try_files $uri $uri/ /index.php?$query_string =404;
+            
+            # PHP processing for wp-admin
+            location ~ \.php$ {
+                include fastcgi_params;
+                fastcgi_pass wordpress:9000;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_index index.php;
+            }
+        }
+
+
 		location / {
 			try_files $uri $uri/ /index.php?$query_string =404;  #this ensure correct healthcheck error, the oldest one redirect always
 		}
@@ -75,6 +103,14 @@ http {
 
 		# phpMyAdmin configuration 
         location /phpmyadmin/ {
+
+            # Restrict PMA access by IP
+            #allow 82.55.232.67;     # Home IP
+            #allow 151.13.27.220;    # School IP
+            #allow 172.18.0.0/16;    # Docker network
+            #allow 127.0.0.1;        # Localhost
+            #deny all;
+
             # Environment variable to control access on pma
             set $pma_access "${PMA_ACCESSIBLE}";
             if ($pma_access != "true") {
