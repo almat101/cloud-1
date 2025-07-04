@@ -1,0 +1,16 @@
+# roles/app_code/tasks/main.yml
+---
+- name: Clone or pull application code from GitHub
+  ansible.builtin.git:
+    repo: "{{ app_repo_url }}"
+    dest: "{{ app_dest_path }}"
+    version: "{{ app_branch }}"
+    accept_hostkey: yes  # Important for first-time connections
+    force: yes # da testare questo forza il push anche se ci sono modifiche locali non pushate
+  register: git_clone_result
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Verify if code was cloned/updated successfully
+  ansible.builtin.debug:
+    msg: "Code deployment status: {{ git_clone_result.changed | ternary('UPDATED/CLONED', 'ALREADY UP-TO-DATE') }}"

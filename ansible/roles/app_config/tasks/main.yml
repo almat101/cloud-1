@@ -1,0 +1,12 @@
+---
+- name: Deploy .env file from template
+  ansible.builtin.template:
+    src: .env.j2 # Il percorso del tuo template .env.j2
+    dest: "{{ app_dest_path_compose }}/.env" # La destinazione finale del file .env
+    owner: "{{ app_owner_user }}"
+    group: "{{ app_owner_user }}"
+    mode: '0600' # Permessi: solo il proprietario può leggere/scrivere (molto importante per i segreti!)
+  #no_log: true # Impedisce che i contenuti sensibili del file appaiano nei log di Ansible
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  # notify: Restart Docker Compose Services # Riabilitiamo la notifica dell'handler!

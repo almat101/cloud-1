@@ -1,0 +1,95 @@
+# roles/base_setup/tasks/main.yml
+---
+- name: Update apt cache (initial)
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600 # Aggiorna la cache solo se è più vecchia di 1 ora
+
+- name: Install prerequisites for Docker GPG key and Python PIP
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg-agent           # Aggiunto per robustezza con GPG
+      - software-properties-common # Aggiunto per robustezza con i repository
+      - python3-pip           # Essenziale per le dipendenze Python dei moduli Docker di Ansible
+    state: present
+
+- name: Create directory for Docker GPG key
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Docker's official GPG key
+  ansible.builtin.get_url:
+    url: "https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }}/gpg"
+    dest: /etc/apt/keyrings/docker.asc
+    mode: '0644'
+
+- name: Add Docker repository to Apt sources
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ ansible_facts['architecture'] | replace('x86_64', 'amd64') }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/{{ ansible_facts['distribution'] | lower }} {{ ansible_facts['distribution_release'] }} stable"
+    state: present
+    filename: docker
+  when: ansible_facts['os_family'] == 'Debian' # Questa condizione è corretta per Debian e Ubuntu
+
+- name: Update apt cache again after adding Docker repository
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install Docker Engine, CLI, Containerd, Buildx, and Compose Plugin
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+
+- name: Create the application owner user if it does not exist
+  ansible.builtin.user:
+    name: "{{ app_owner_user }}"
+    state: present
+    shell: /bin/bash # Considera /sbin/nologin se l'utente non deve avere accesso shell
+    create_home: yes
+  # Questa task non verrà eseguita se app_owner_user è uguale a ansible_user (es. utente 'ubuntu' su Ubuntu)
+  # ma è cruciale per altre distribuzioni (es. Debian con utente 'admin')
+  when: app_owner_user is defined and app_owner_user != ansible_user
+
+- name: Add current Ansible user to the docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user }}" # Assicurati che l'utente con cui Ansible si connette abbia accesso a Docker
+    groups: docker
+    append: yes
+
+- name: Add application owner user ({{ app_owner_user }}) to the docker group
+  ansible.builtin.user:
+    name: "{{ app_owner_user }}"
+    groups: docker
+    append: yes
+  # Questo è importante se app_owner_user è diverso da ansible_user
+  when: app_owner_user is defined and app_owner_user != ansible_user
+
+- name: Ensure Docker service is running and enabled
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create base application directory
+  ansible.builtin.file:
+    path: "{{ app_dest_path }}"
+    state: directory
+    owner: "{{ app_owner_user }}"
+    group: "{{ app_owner_user }}"
+    mode: '0755'
+  # Esegui questa task come l'utente proprietario dell'app per i permessi corretti della directory principale
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Inform about relogging for docker group to take effect
+  ansible.builtin.debug:
+    msg: "Docker installed and configured. You may need to log out and log back into the EC2 instance (or start a new SSH session) for the users in the 'docker' group to be fully effective without 'sudo'."
+  # Questo messaggio è utile per l'utente che debugga via SSH, non per l'automazione.

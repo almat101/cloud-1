@@ -1,0 +1,8 @@
+# roles/docker_app/handlers/main.yml
+---
+- name: Restart Docker Compose Services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    state: restarted # Questo riavvia i servizi
+  become: yes
+  become_user: "{{ app_owner_user }}"

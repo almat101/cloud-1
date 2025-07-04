@@ -1,0 +1,19 @@
+---
+# Variabili comuni a tutti gli host nell'inventario
+
+# Determina l'utente proprietario dell'applicazione in base alla distribuzione.
+app_owner_user: "{{ 'admin' if ansible_distribution == 'Debian' else 'ubuntu' }}"
+app_project: "cloud-1"
+# Percorso di destinazione per il codice dell'applicazione.
+app_dest_path: "/home/{{ app_owner_user }}/{{ app_project }}"
+app_dest_path_compose: "/home/{{ app_owner_user }}/{{ app_project }}/srcs"
+# Comando standard per Docker Compose V2
+docker_compose_command: "docker compose"
+
+# utile a app_code per scaricare la repo
+app_repo_url: "git@github.com:almat101/cloud-1.git" ###SSH
+app_branch: "main"
+# Altre variabili globali non sensibili
+
+# Nota: Le vars_files per i segreti (vars/secrets.yml) di solito si includono nel playbook principale
+# o in un ruolo specifico (come app_config) a seconda di chi ha bisogno di quei segreti.

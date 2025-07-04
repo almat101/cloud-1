@@ -1,0 +1,36 @@
+# roles/docker_app/tasks/main.yml
+---
+- name: Ensure Docker Compose is available (sanity check)
+  ansible.builtin.command: "{{ docker_compose_command }} version"
+  register: docker_compose_version_check
+  changed_when: false
+  failed_when: docker_compose_version_check.rc != 0
+
+- name: Stop and remove existing Docker Compose services if running
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    state: absent # Arresta e rimuove i container e le reti
+  ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  #notify: Restart Docker Compose Services # Notifica l'handler dopo aver fermato i servizi
+
+- name: Build Docker Compose services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    build: always # Forziamo la ricostruzione ogni volta per coerenza
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  #notify: Restart Docker Compose Services # Notifica l'handler dopo aver ricostruito
+
+- name: Start Docker Compose services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    state: present # Assicura che i servizi siano su
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  register: docker_compose_start_result
+
+- name: Display Docker Compose status
+  ansible.builtin.debug:
+    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
