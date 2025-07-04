@@ -14,7 +14,7 @@ http {
     access_log /var/log/nginx/access.log;
     error_log /var/log/nginx/error.log;
 
-    #Default server
+    #Default server - Handles requests with unknown/unmatched server_name
     server {
         listen 80;
         listen [::]:80;
