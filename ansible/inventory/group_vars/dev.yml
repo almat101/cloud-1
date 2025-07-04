@@ -1,0 +1,5 @@
+---
+# Development environment (localhost)
+app_owner_user: "ale"  # USER on local development
+app_dest_path: "/home/{{ app_owner_user}}/{{ app_project }}"
+app_dest_path_compose: "/home/{{ app_owner_user }}/{{ app_project }}/srcs"

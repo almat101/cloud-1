@@ -1,0 +1,9 @@
+---
+# Production environment (EC2)
+# For Ubuntu
+app_owner_user: "ubuntu"
+# For Debian
+#app_owner_user: "admin"
+
+app_dest_path: "/home/{{ app_owner_user}}/{{ app_project }}"
+app_dest_path_compose: "/home/{{ app_owner_user }}/{{ app_project }}/srcs"

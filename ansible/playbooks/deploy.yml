@@ -1,38 +1,89 @@
-# playbooks/site.yml
 ---
-- name: Deploy cloud-1
-  # Questo playbook orchestrerà l'installazione, il deployment del codice e l'avvio dell'applicazione.
+# Common tasks for all environments
+- name: Common setup for all environments
+  hosts: all
+  gather_facts: yes
+  become: yes
+  tasks:
+    - name: Set environment-specific fact
+      set_fact:
+        is_prod: "{{ inventory_hostname in groups['prod'] | default([]) }}"
+        is_dev: "{{ inventory_hostname in groups['dev'] | default([]) }}"
 
-  hosts: ec2_hosts # Applica a tutti gli host definiti nel gruppo 'ec2_hosts' del tuo inventario
-  become: yes      # Permette ai ruoli di eseguire task con privilegi di root quando necessario
-  gather_facts: yes # Raccoglie i facts del sistema (come ansible_distribution, ansible_os_family)
-
-  # Includi il file di variabili sensibili criptato con Ansible Vault.
-  # Le variabili definite in questo file saranno disponibili per tutte le task e i ruoli in questo play.
+# Development environment deployment
+- name: Deploy cloud-1 (Development)
+  hosts: dev
+  become: yes
+  gather_facts: yes
+  
   vars_files:
-    - ../vars/secrets.yml # Assicurati che questo percorso sia relativo alla root del tuo progetto Ansible
-
-  # Definizione delle variabili comuni.
-  # Queste variabili saranno disponibili per tutti i ruoli chiamati.
-  # Idealmente, molte di queste potrebbero essere definite in inventory/group_vars/all.yml
-  # per una migliore gestione a livello di ambiente.
-
-
-  # Lista dei ruoli da eseguire in sequenza.
-  # Ansible eseguirà le task di ogni ruolo nell'ordine specificato.
+    - ../vars/secrets_dev.yml
+  
   roles:
-    # Ruolo 1: Configurazione di base del sistema e installazione dei prerequisiti.
-    # Include l'installazione di Docker, la configurazione degli utenti e la creazione della directory base.
     - base_setup
-
-    # Ruolo 2: Gestione del codice dell'applicazione.
-    # Clona o aggiorna la repository Git dell'applicazione nel percorso di destinazione.
     - app_code
-
-    # Ruolo 3: Deployment dei file di configurazione dell'applicazione.
-    # Inserisce il file .env (popolato con le variabili, incluse quelle sensibili dal Vault).
     - app_config
-
-    # Ruolo 4: Gestione del ciclo di vita dell'applicazione Docker.
-    # Include la fase di build delle immagini Docker locali e l'avvio dei servizi Docker Compose.
     - docker_app
+  
+  vars:
+    env_name: "development"
+    app_env: "dev"
+
+# Production environment deployment
+- name: Deploy cloud-1 (Production)
+  hosts: prod
+  become: yes
+  gather_facts: yes
+  
+  vars_files:
+    - ../vars/secrets_prod.yml
+  
+  roles:
+    - base_setup
+    - app_code
+    - app_config
+    - docker_app
+  
+  vars:
+    env_name: "production"
+    app_env: "prod"
+
+#OLD DEPLOY.yml 
+# # playbooks/site.yml
+# ---
+# - name: Deploy cloud-1
+#   # Questo playbook orchestrerà l'installazione, il deployment del codice e l'avvio dell'applicazione.
+
+#   hosts: ec2_hosts # Applica a tutti gli host definiti nel gruppo 'ec2_hosts' del tuo inventario
+#   become: yes      # Permette ai ruoli di eseguire task con privilegi di root quando necessario
+#   gather_facts: yes # Raccoglie i facts del sistema (come ansible_distribution, ansible_os_family)
+
+#   # Includi il file di variabili sensibili criptato con Ansible Vault.
+#   # Le variabili definite in questo file saranno disponibili per tutte le task e i ruoli in questo play.
+#   vars_files:
+#     - ../vars/secrets.yml # Assicurati che questo percorso sia relativo alla root del tuo progetto Ansible
+
+#   # Definizione delle variabili comuni.
+#   # Queste variabili saranno disponibili per tutti i ruoli chiamati.
+#   # Idealmente, molte di queste potrebbero essere definite in inventory/group_vars/all.yml
+#   # per una migliore gestione a livello di ambiente.
+
+
+#   # Lista dei ruoli da eseguire in sequenza.
+#   # Ansible eseguirà le task di ogni ruolo nell'ordine specificato.
+#   roles:
+#     # Ruolo 1: Configurazione di base del sistema e installazione dei prerequisiti.
+#     # Include l'installazione di Docker, la configurazione degli utenti e la creazione della directory base.
+#     - base_setup
+
+#     # Ruolo 2: Gestione del codice dell'applicazione.
+#     # Clona o aggiorna la repository Git dell'applicazione nel percorso di destinazione.
+#     - app_code
+
+#     # Ruolo 3: Deployment dei file di configurazione dell'applicazione.
+#     # Inserisce il file .env (popolato con le variabili, incluse quelle sensibili dal Vault).
+#     - app_config
+
+#     # Ruolo 4: Gestione del ciclo di vita dell'applicazione Docker.
+#     # Include la fase di build delle immagini Docker locali e l'avvio dei servizi Docker Compose.
+#     - docker_app

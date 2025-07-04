@@ -88,6 +88,27 @@
   # Esegui questa task come l'utente proprietario dell'app per i permessi corretti della directory principale
   become: yes
   become_user: "{{ app_owner_user }}"
+  # Skip become_user for localhost
+  when: inventory_hostname != 'localhost'
+
+- name: Print debug information
+  ansible.builtin.debug:
+    msg: 
+      - "app_dest_path is set to: {{ app_dest_path }}"
+      - "app_owner_user is set to: {{ app_owner_user }}"
+      - "ansible_user is set to: {{ ansible_user }}"
+      - "Current user is: {{ lookup('env', 'USER') }}"
+      - "Home directory is: {{ ansible_env.HOME }}"
+ 
+- name: Create base application directory (for local development-localhost)
+  ansible.builtin.file:
+    path: "{{ app_dest_path }}"
+    state: directory
+    owner: "{{ app_owner_user }}"
+    group: "{{ app_owner_user }}"
+    mode: '0755'
+  become: yes
+  when: inventory_hostname == 'localhost'
 
 - name: Inform about relogging for docker group to take effect
   ansible.builtin.debug:
