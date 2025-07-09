@@ -1,0 +1,3 @@
+#the secrete are encrypted in the repo using ansible-vault
+paths-ignore:
+  - "ansible/vars/*secrets*.yml"
