@@ -96,14 +96,6 @@ services:
     networks:
       - cloud-1
 
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   container_name: cloudflared
-  #   restart: unless-stopped
-  #   command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
-  #   networks:
-  #     - cloud-1
-
   certbot:
     image: certbot
     container_name: certbot
