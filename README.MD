@@ -45,7 +45,7 @@ Cloud-1 demonstrates **Infrastructure as Code** principles by combining Docker c
 ### Local Testing
 - No SSH required for local testing
 - Project runs directly on your current machine
-- You have to create your own secrets file (vars/secrets_dev.yml) - see [Configuration](#🔧-configuration)
+- You have to create your own secrets file (vars/secrets_dev.yml) - see [Configuration](#-configuration)
 
 
 ## 🌟 Key Features
