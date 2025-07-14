@@ -140,6 +140,7 @@ http {
 		location /health {
 			# access_log off;
 			return 200 "Healthy\n";
+            add_header Content-Type text/plain;
 		}
 	}
 }
