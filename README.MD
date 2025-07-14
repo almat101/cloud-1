@@ -55,7 +55,16 @@ Cloud-1 demonstrates **Infrastructure as Code** principles by combining Docker c
 - **🚀 Multi-Environment**: Separate dev/prod configurations with Ansible
 - **🔒 Security-First**: Vault-encrypted secrets, access controls, security headers
 - **⚡ Zero-Downtime**: Health checks and graceful service management
-- **📊 Monitoring**: Health endpoints and comprehensive logging
+- **🛠️ WordPress CLI Integration**: Automated WordPress setup with [`wp_config.sh`](srcs/requirements/wordpress/tools/wp_config.sh)
+- **🔧 Custom Content Management**: Automated post creation with media upload support
+- **📊 Health Monitoring**: Built-in health check endpoints for service monitoring
+- **🔐 Advanced Security Config**: phpMyAdmin with blowfish encryption and security hardening
+- **🏗️ Role-Based Deployment**: Modular Ansible roles for [`app_code`](ansible/roles/app_code/), [`app_config`](ansible/roles/app_config/), [`base_setup`](ansible/roles/base_setup/), and [`docker_app`](ansible/roles/docker_app/)
+- **📁 Persistent Storage**: Organized volume management for data persistence across services
+- **🌐 Network Isolation**: Custom Docker networking with service-to-service communication
+- **⚙️ Environment Templating**: Dynamic `.env` generation from Ansible Vault secrets via [`.env.j2`](ansible/roles/app_config/templates/.env.j2)
+
+
 
 ## 📚 Documentation
 
