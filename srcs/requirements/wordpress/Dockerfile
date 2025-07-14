@@ -24,7 +24,7 @@ RUN mkdir -p /var/www/html && \
 COPY conf/www.conf /etc/php84/php-fpm.d/www.conf
 
 # Copy local assets
-COPY assets/aws.jpg /tmp/aws.jpg
+COPY assets/aws.jpg var/www/html/tmp/aws.jpg
 
 # Download, extract WordPress and Fix ownership of all wp files
 RUN wget https://wordpress.org/wordpress-${WP_VERSION}.tar.gz && \
