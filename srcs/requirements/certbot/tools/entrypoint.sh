@@ -47,7 +47,7 @@ if [ -f "/etc/letsencrypt/live/$DOMAIN_NAME/fullchain.pem" ]; then
 else
     echo "Generating new certificate for $DOMAIN_NAME using DNS challenge..."
     
-    Generate certificate using DNS challenge
+    #Generate certificate using DNS challenge
     certbot certonly \
         --dns-cloudflare \
         --dns-cloudflare-credentials /tmp/cloudflare.ini \
