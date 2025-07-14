@@ -23,6 +23,9 @@ RUN mkdir -p /var/www/html && \
 # Copy wordpress conf in alpine linux folder
 COPY conf/www.conf /etc/php84/php-fpm.d/www.conf
 
+# Copy local assets
+COPY assets/aws.jpg /tmp/aws.jpg
+
 # Download, extract WordPress and Fix ownership of all wp files
 RUN wget https://wordpress.org/wordpress-${WP_VERSION}.tar.gz && \
     tar -xzvf wordpress-${WP_VERSION}.tar.gz -C /var/www/html --strip-components=1 && \

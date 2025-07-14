@@ -51,6 +51,11 @@ if ! test -f "/var/www/html/wp-config.php"; then
 		echo "DOMAIN_NAME is set to '$DOMAIN_NAME', skipping site URL update."
 	fi
 
+	export LANG=C.UTF-8 && \
+	wp theme install astra --activate --allow-root && \
+	wp plugin install elementor --activate --allow-root && \
+	wp post create --post_title="Welcome!" --post_content="<h2>🚀 Cloud-1 WordPress Stack</h2><p>Deployed with Docker & Ansible!</p>" --post_status=publish --allow-root
+		
 	echo "wp-config.php created!"
 else
 	echo "wp-config.php already exist!"
