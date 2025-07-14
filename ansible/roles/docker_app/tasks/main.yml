@@ -6,31 +6,107 @@
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
 
-- name: Stop and remove existing Docker Compose services if running
+- name: Check if code was updated
+  ansible.builtin.set_fact:
+    should_rebuild: "{{ code_was_updated | default(false) }}"
+
+- name: Display deployment strategy
+  ansible.builtin.debug:
+    msg: "Deployment strategy: {{ should_rebuild | ternary('REBUILD (code changed)', 'NORMAL START (no code changes)') }}"
+
+# Conditional logic: Full rebuild when code changed
+- name: Stop and remove existing Docker Compose services (when rebuilding)
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     state: absent # Arresta e rimuove i container e le reti
   ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
   become: yes
   become_user: "{{ app_owner_user }}"
-  #notify: Restart Docker Compose Services # Notifica l'handler dopo aver fermato i servizi
+  when: should_rebuild
 
-- name: Build Docker Compose services
+- name: Build Docker Compose services (when rebuilding)
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     build: always # Forziamo la ricostruzione ogni volta per coerenza
   become: yes
   become_user: "{{ app_owner_user }}"
-  #notify: Restart Docker Compose Services # Notifica l'handler dopo aver ricostruito
+  when: should_rebuild
 
-- name: Start Docker Compose services
+- name: Start Docker Compose services after rebuild
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     state: present # Assicura che i servizi siano su
   become: yes
   become_user: "{{ app_owner_user }}"
-  register: docker_compose_start_result
+  register: docker_compose_rebuild_result
+  when: should_rebuild
 
-- name: Display Docker Compose status
+# Normal startup when no code changes
+- name: Start Docker Compose services normally (no rebuild)
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    state: present # Assicura che i servizi siano su
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  register: docker_compose_normal_result
+  when: not should_rebuild
+
+# Display results based on deployment type
+- name: Display Docker Compose rebuild status
   ansible.builtin.debug:
-    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
+    msg: "Docker Compose services REBUILT and started. Status: {{ docker_compose_rebuild_result }}"
+  when: should_rebuild
+
+- name: Display Docker Compose normal startup status
+  ansible.builtin.debug:
+    msg: "Docker Compose services started normally. Status: {{ docker_compose_normal_result }}"
+  when: not should_rebuild
+
+# Health check for all scenarios
+- name: Wait for services to be healthy
+  ansible.builtin.wait_for:
+    port: 443
+    host: "{{ ansible_default_ipv4.address | default('localhost') }}"
+    timeout: 60
+  become: yes
+
+- name: Final deployment status
+  ansible.builtin.debug:
+    msg: "✅ Deployment completed successfully - {{ should_rebuild | ternary('with rebuild', 'without rebuild') }}"
+
+# # roles/docker_app/tasks/main.yml
+# ---
+# - name: Ensure Docker Compose is available (sanity check)
+#   ansible.builtin.command: "{{ docker_compose_command }} version"
+#   register: docker_compose_version_check
+#   changed_when: false
+#   failed_when: docker_compose_version_check.rc != 0
+
+# - name: Stop and remove existing Docker Compose services if running
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ app_dest_path_compose }}"
+#     state: absent # Arresta e rimuove i container e le reti
+#   ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+#   become: yes
+#   become_user: "{{ app_owner_user }}"
+#   #notify: Restart Docker Compose Services # Notifica l'handler dopo aver fermato i servizi
+
+# - name: Build Docker Compose services
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ app_dest_path_compose }}"
+#     build: always # Forziamo la ricostruzione ogni volta per coerenza
+#   become: yes
+#   become_user: "{{ app_owner_user }}"
+#   #notify: Restart Docker Compose Services # Notifica l'handler dopo aver ricostruito
+
+# - name: Start Docker Compose services
+#   community.docker.docker_compose_v2:
+#     project_src: "{{ app_dest_path_compose }}"
+#     state: present # Assicura che i servizi siano su
+#   become: yes
+#   become_user: "{{ app_owner_user }}"
+#   register: docker_compose_start_result
+
+# - name: Display Docker Compose status
+#   ansible.builtin.debug:
+#     msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"

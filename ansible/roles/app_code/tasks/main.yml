@@ -14,3 +14,8 @@
 - name: Verify if code was cloned/updated successfully
   ansible.builtin.debug:
     msg: "Code deployment status: {{ git_clone_result.changed | ternary('UPDATED/CLONED', 'ALREADY UP-TO-DATE') }}"
+
+# Store the code change status for other roles to use
+- name: Set fact for code changes
+  ansible.builtin.set_fact:
+    code_was_updated: "{{ git_clone_result.changed }}"
