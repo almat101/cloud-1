@@ -62,13 +62,27 @@
     msg: "Docker Compose services started normally. Status: {{ docker_compose_normal_result }}"
   when: not should_rebuild
 
-# Health check for all scenarios
-- name: Wait for services to be healthy
-  ansible.builtin.wait_for:
-    port: 443
-    host: "{{ ansible_default_ipv4.address | default('localhost') }}"
-    timeout: 60
+- name: Wait for HTTP/HTTPS service to respond properly
+  ansible.builtin.uri:
+    url: "https://{{ ansible_default_ipv4.address | default('localhost') }}/health"
+    method: GET
+    validate_certs: false  # For self-signed certs
+    status_code: 200       # Expect 200 OK
+    timeout: 10
+  retries: 12
+  delay: 10
+  register: health_response
+  until: health_response.status == 200
   become: yes
+
+# Add this task anywhere in your docker_app role for testing
+- name: Debug ansible_default_ipv4.address value
+  ansible.builtin.debug:
+    msg: |
+      ansible_default_ipv4.address: {{ ansible_default_ipv4.address | default('UNDEFINED') }}
+      ansible_host: {{ ansible_host | default('UNDEFINED') }}
+      inventory_hostname: {{ inventory_hostname }}
+      Current host being used: {{ ansible_default_ipv4.address | default('localhost') }}
 
 - name: Final deployment status
   ansible.builtin.debug:

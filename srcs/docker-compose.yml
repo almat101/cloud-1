@@ -23,7 +23,7 @@ services:
       certbot:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -k https://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f -s https://localhost/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
