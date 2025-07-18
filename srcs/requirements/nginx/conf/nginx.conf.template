@@ -139,8 +139,8 @@ http {
 
 		location = /health {
 			# access_log off;
+            default_type text/plain;
 			return 200 "Healthy\n";
-            add_header Content-Type text/plain;
 		}
 	}
 }
