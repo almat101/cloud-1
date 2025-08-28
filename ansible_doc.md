@@ -418,18 +418,11 @@ ansible-playbook playbooks/deploy.yml --limit dev -vv
 
 1. **Security**:
    - Always use Ansible Vault for sensitive data
-   - Implement proper SSH key management
-   - Use least privilege principles
-
-2. **Deployment**:
-   - Test in development before production
-   - Use `--check` mode for dry runs
-   - Monitor deployment logs
-
-3. **Maintenance**:
-   - Keep Ansible and collections updated
-   - Regular backup of vault files
-   - Document environment-specific configurations
+   - Implement proper SSH key management:  
+     - Ensure that SSH private keys are securely generated, stored, and used only by authorized users. This includes setting strict file permissions (e.g., `chmod 600 ~/.ssh/ec2_ubuntu.pem`), never sharing private keys, and using a dedicated non-root user (such as `app_owner_user: ubuntu` in the Ansible inventory) for SSH access to the
+   - Use least privilege principles:
+     - `app_owner_user: ubuntu` in Ansible inventory restricts SSH and OS-level access on the server/EC2 to a non-root user.
+     - `nginx` user/group in the container Dockerfiles for WordPress/phpMyAdmin ensures application processes run with
 
 ## Advanced Configuration
 
