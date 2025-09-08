@@ -1,0 +1,28 @@
+---
+- name: Remove project folder
+  hosts: "{{ target | default('dev') }}"
+  become: yes
+  tasks:
+    - name: Remove project folder (like executing rm -rf)
+      ansible.builtin.file:
+        path: "{{ app_dest_path }}"
+        state: absent
+
+
+### Recap commands:
+
+# For local development:
+# ansible-playbook playbooks/remove_project_folder.yml -e "target=prod" --ask-become-pass
+# we need sudo password `--ask-become-pass` for executing `rm -rf`
+
+# For prod development:
+# ansible-playbook playbooks/remove_project_folder.yml -e "target=prod"
+
+
+# Recap -e extra vars:
+# -e EXTRA_VARS, --extra-vars EXTRA_VARS
+# set additional variables as key=value or YAML/JSON, if filename prepend with @. This argument may be specified multiple times.
+
+
+# Recap state: absent
+# If absent, directories will be recursively deleted, and files or symlinks will be unlinked. In the case of a directory, if diff is declared, you will see the files and folders deleted listed under path_contents. Note that absent will not cause ansible.builtin.file to fail if the path does not exist as the state did not change.

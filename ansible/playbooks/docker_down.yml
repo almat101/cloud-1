@@ -1,0 +1,15 @@
+---
+- name: Stop and remove all Docker containers (docker compose down)
+  hosts: "{{ target | default('dev') }}"
+  become: yes
+  tasks:
+    - name: Stop and remove containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dest_path_compose | default('../srcs') }}"
+        state: absent
+
+# recap commands:
+# use host default value (dev)
+# ansible-playbook playbooks/docker_down.yml
+# set target to selected hosts (prod)
+# ansible-playbook playbooks/docker_down.yml -e "target=prod"
