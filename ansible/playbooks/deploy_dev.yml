@@ -1,0 +1,31 @@
+---
+# Development deployment playbook
+#
+# Run this playbook to deploy to the development environment.
+# This playbook runs directly on the local machine (localhost) and does not use SSH.
+#
+# Recommended command:
+#   ansible-playbook playbooks/deploy_dev.yml --ask-vault-pass --ask-become-pass
+#
+# - You will be prompted for the Ansible Vault password to decrypt secrets.
+# - You will be prompted for the sudo password to perform privileged tasks.
+# - The deployment will target the hosts in the [dev] group defined in the inventory.
+# - The roles base_setup, app_code, app_config, and docker_app will be applied.
+
+- name: Deploy cloud-1 (Development)
+  hosts: dev
+  become: yes
+  gather_facts: yes
+  
+  vars_files:
+    - ../vars/secrets_dev.yml
+  
+  roles:
+    - base_setup
+    - app_code
+    - app_config
+    - docker_app
+  
+  vars:
+    env_name: "development"
+    app_env: "dev"
