@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ANSIBLE_PROJECT_DIR=$(pwd)
-VENV_NAME="venv"
+VENV_NAME=".venv"
 VENV_PATH="$ANSIBLE_PROJECT_DIR/$VENV_NAME"
 
 echo "Checking python version..."
@@ -64,6 +64,8 @@ if ! python -c "import ansible.collections.community.docker" &> /dev/null; then
     echo "community.docker collection installed successfully."
 fi
 
+echo ""
+echo "Yout must source this file or source $VENV_name/bin/activate to enter venv!"
 echo "Ansible and community.docker are ready."
 echo "You are now in the Ansible virtual environment."
 echo "You can now run Ansible commands (e.g., 'ansible --version', 'ansible-playbook')."
