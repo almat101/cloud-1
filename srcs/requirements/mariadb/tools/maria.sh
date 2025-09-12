@@ -1,4 +1,15 @@
 #!/bin/sh
+
+set -eu
+
+# Check required environment variables
+for var in MARIA_ROOT_PASSWORD MARIA_DB_NAME MARIA_USER MARIA_PASSWORD; do
+  if [ -z "${!var:-}" ]; then
+    echo "ERROR: Environment variable $var is not set."
+    exit 1
+  fi
+done
+
 #start mariadbd-safe in the background
 mariadbd-safe &
 

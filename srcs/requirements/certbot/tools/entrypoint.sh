@@ -1,6 +1,14 @@
 #!/bin/sh
 
-set -e
+set -eu
+
+# Check required environment variables
+for var in DOMAIN_NAME EMAIL CLOUDFLARE_API_TOKEN; do
+  if [ -z "${!var:-}" ]; then
+    echo "ERROR: Environment variable $var is not set."
+    exit 1
+  fi
+done
 
 echo "=== Using Cloudflare DNS Challenge ==="
 echo "Domain: $DOMAIN_NAME"

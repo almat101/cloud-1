@@ -1,5 +1,15 @@
 #!/bin/sh
 
+set -eu
+
+# Check required environment variables
+for var in WP_TITLE WP_USER WP_PASSWORD WP_EMAIL WP_ROOT_USER WP_ROOT_PASSWORD WP_ROOT_EMAIL WP_ADMIN_ACCESSIBLE WP_VERSION; do
+  if [ -z "${!var:-}" ]; then
+    echo "ERROR: Environment variable $var is not set."
+    exit 1
+  fi
+done
+
 echo "Waiting for mariadb..."
 until mariadb -h "$MARIA_DB" -u "$MARIA_USER" -p"$MARIA_PASSWORD" "$MARIA_DB_NAME" -e "SELECT 1;" >/dev/null 2>&1; do
   echo "Waiting for database connection..."
@@ -10,17 +20,9 @@ echo "Database connection established!"
 cd /var/www/html
 
 # #This lines is required if I dont use cloudeflared tunnel
-# echo "Giving permission to files"
-# find /var/www/html -type d -exec chmod 755 {} \;
-# find /var/www/html -type f -exec chmod 644 {} \;
-
-if [ ! -f /var/www/html/wp-config-sample.php ]; then
-	echo "WordPress not found, downloading..."
-	wget https://wordpress.org/wordpress-${WP_VERSION}.tar.gz && \
-	tar -xzvf wordpress-${WP_VERSION}.tar.gz -C /var/www/html --strip-components=1 && \
-    rm wordpress-${WP_VERSION}.tar.gz && \
-    chown -R nginx:nginx /var/www/html
-fi
+echo "Giving permission to files"
+find /var/www/html -type d -exec chmod 755 {} \;
+find /var/www/html -type f -exec chmod 644 {} \;
 
 # Create a new wp-config.php file via wp-cli
 if ! test -f "/var/www/html/wp-config.php"; then
