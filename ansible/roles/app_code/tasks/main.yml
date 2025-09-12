@@ -15,7 +15,11 @@
   ansible.builtin.debug:
     msg: "Code deployment status: {{ git_clone_result.changed | ternary('UPDATED/CLONED', 'ALREADY UP-TO-DATE') }}"
 
-# Store the code change status for other roles to use
+# Store the code change status for later using in docker_app tasks:
 - name: Set fact for code changes
   ansible.builtin.set_fact:
     code_was_updated: "{{ git_clone_result.changed }}"
+    # code_was_updated will be true if:
+    # - The repo is cloned for the first time (changed: true)
+    # - A pull is performed and there are updates (changed: true)
+    # - It will be false if there are no changes to apply (changed: false)

@@ -24,8 +24,8 @@ Cloud-1 demonstrates **Infrastructure as Code** principles by combining Docker c
   ┌─────▼─────┐ ┌─────▼─────┐ ┌─────▼─────┐
   │WordPress  │ │phpMyAdmin │ │  Certbot  │
   │   (PHP)   │ │   (Admin) │ │   (SSL)   │
-  └─────┬─────┘ └─────┬─────┘ └───────────┘
-        │             │
+  └─────┬─────┘ └─────┬─────┘ └─────┬─────┘
+        │             │             │
         └─────────────┼─────────────┘
                       │
                 ┌─────▼─────┐

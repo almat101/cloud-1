@@ -1,4 +1,15 @@
 # roles/docker_app/tasks/main.yml
+
+#####
+
+# This task uses the community.docker.docker_compose_v2 module to control Docker Compose projects.
+# - project_src: specifies the directory containing the docker-compose.yml file.
+# - state: absent      # Equivalent to 'docker compose down' (stops and removes containers and networks)
+# - state: present     # Equivalent to 'docker compose up -d' (starts containers in detached mode)
+# - build: always      # Equivalent to adding '--build' to 'docker compose up', forcing a rebuild of images before starting containers
+# - build: never       # Equivalent to adding '--no-build' to 'docker compose up', never building images before starting containers
+# Reference: https://docs.ansible.com/ansible/latest/collections/community/docker/docker_compose_v2_module.html
+
 ---
 - name: Ensure Docker Compose is available (sanity check)
   ansible.builtin.command: "{{ docker_compose_command }} version"
@@ -9,6 +20,11 @@
 - name: Check if code was updated
   ansible.builtin.set_fact:
     should_rebuild: "{{ code_was_updated | default(false) }}"
+  # code_was_updated is a variable set by the app_code role.
+  # It will be true if:
+  #   - The repository is cloned for the first time (changed: true)
+  #   - A pull is performed and there are updates (changed: true)
+  # It will be false if there are no changes to apply (changed: false)
 
 - name: Display deployment strategy
   ansible.builtin.debug:
@@ -18,8 +34,8 @@
 - name: Stop and remove existing Docker Compose services (when rebuilding)
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    state: absent # Arresta e rimuove i container e le reti
-  ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+    state: absent # Equivalent to 'docker compose down'
+  ignore_errors: yes # Ignore errors if services are not yet running
   become: yes
   become_user: "{{ app_owner_user }}"
   when: should_rebuild
@@ -27,7 +43,7 @@
 - name: Build Docker Compose services (when rebuilding)
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    build: always # Forziamo la ricostruzione ogni volta per coerenza
+    build: always # Equivalent to adding '--build' to 'docker compose up'
   become: yes
   become_user: "{{ app_owner_user }}"
   when: should_rebuild
@@ -35,39 +51,44 @@
 - name: Start Docker Compose services after rebuild
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    state: present # Assicura che i servizi siano su
+    state: present #Equivalent to 'docker compose up -d'
   become: yes
   become_user: "{{ app_owner_user }}"
   register: docker_compose_rebuild_result
   when: should_rebuild
 
-# Normal startup when no code changes
+# Normal startup when no code changes should_rebuild is false
 - name: Start Docker Compose services normally (no rebuild)
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    state: present # Assicura che i servizi siano su
+    state: present #Equivalent to 'docker compose up -d'
   become: yes
   become_user: "{{ app_owner_user }}"
   register: docker_compose_normal_result
   when: not should_rebuild
 
-# Display results based on deployment type
+# Display results based on deployment type if should_rebuild is true:
 - name: Display Docker Compose rebuild status
   ansible.builtin.debug:
     msg: "Docker Compose services REBUILT and started. Status: {{ docker_compose_rebuild_result }}"
   when: should_rebuild
 
+# Display results based on deployment type if should_rebuild is false:
 - name: Display Docker Compose normal startup status
   ansible.builtin.debug:
     msg: "Docker Compose services started normally. Status: {{ docker_compose_normal_result }}"
   when: not should_rebuild
 
+### REMEMBER: If you are using the certbot script with the --staging flag (generating fake SSL certs), validate_certs must be set to false!
 - name: Wait for HTTP/HTTPS service to respond properly
+  # This task checks the /health endpoint over HTTPS to ensure the application is up and responding with HTTP 200.
+  # It retries the request multiple times, waiting up to 2 minutes, to allow the service time to start after deployment.
+  # check internal IP ( to ensure service is up)
   ansible.builtin.uri:
     url: "https://{{ ansible_default_ipv4.address | default('localhost') }}/health"
     method: GET
-    validate_certs: false  # For self-signed certs
-    status_code: 200       # Expect 200 OK
+    validate_certs: false
+    status_code: 200
     timeout: 10
   retries: 12
   delay: 10
@@ -75,7 +96,20 @@
   until: health_response.status == 200
   become: yes
 
-# Add this task anywhere in your docker_app role for testing
+- name: Wait for HTTP/HTTPS service to respond properly (public DNS)
+  # Checks the /health endpoint over HTTPS using the public DNS name to ensure DNS and SSL are working.
+  ansible.builtin.uri:
+    url: "https://cloud1.alematta.com/health"
+    method: GET
+    validate_certs: false  # Production certs must be true ( no --staging for )
+    status_code: 200
+    timeout: 10
+  retries: 12
+  delay: 10
+  register: health_response_dns
+  until: health_response_dns.status == 200
+  become: yes
+
 - name: Debug ansible_default_ipv4.address value
   ansible.builtin.debug:
     msg: |
@@ -83,6 +117,8 @@
       ansible_host: {{ ansible_host | default('UNDEFINED') }}
       inventory_hostname: {{ inventory_hostname }}
       Current host being used: {{ ansible_default_ipv4.address | default('localhost') }}
+      Should_rebuild: {{ should_rebuild }}
+      Code_was_updated: {{ code_was_updated }}
 
 - name: Final deployment status
   ansible.builtin.debug:

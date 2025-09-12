@@ -1,7 +1,7 @@
 ---
 - name: Deploy .env file from template
   ansible.builtin.template:
-    src: .env.j2 # Il percorso del tuo template .env.j2
+    src: .env.j2 # il file .env.j2 si trova in app_config/templates/ e serve a generare dal vault il file .env
     dest: "{{ app_dest_path_compose }}/.env" # La destinazione finale del file .env
     owner: "{{ app_owner_user }}"
     group: "{{ app_owner_user }}"
