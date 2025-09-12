@@ -4,7 +4,8 @@ set -eu
 
 # Check required environment variables
 for var in WP_TITLE WP_USER WP_PASSWORD WP_EMAIL WP_ROOT_USER WP_ROOT_PASSWORD WP_ROOT_EMAIL WP_ADMIN_ACCESSIBLE WP_VERSION; do
-  if [ -z "${!var:-}" ]; then
+eval "value=\$$var"
+  if [ -z "${value}" ]; then
     echo "ERROR: Environment variable $var is not set."
     exit 1
   fi

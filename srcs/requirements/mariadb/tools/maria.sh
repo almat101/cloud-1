@@ -4,7 +4,8 @@ set -eu
 
 # Check required environment variables
 for var in MARIA_ROOT_PASSWORD MARIA_DB_NAME MARIA_USER MARIA_PASSWORD; do
-  if [ -z "${!var:-}" ]; then
+  eval "value=\$$var"
+  if [ -z "$value" ]; then
     echo "ERROR: Environment variable $var is not set."
     exit 1
   fi

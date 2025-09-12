@@ -4,7 +4,8 @@ set -eu
 
 # Check required environment variables
 for var in DOMAIN_NAME EMAIL CLOUDFLARE_API_TOKEN; do
-  if [ -z "${!var:-}" ]; then
+  eval "value=\$$var"
+  if [ -z "$value" ]; then
     echo "ERROR: Environment variable $var is not set."
     exit 1
   fi
