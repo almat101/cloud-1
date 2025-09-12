@@ -48,16 +48,6 @@ else
     echo "Generating new certificate for $DOMAIN_NAME using DNS challenge..."
     
     #Generate certificate using DNS challenge
-    certbot certonly \
-        --dns-cloudflare \
-        --dns-cloudflare-credentials /tmp/cloudflare.ini \
-        --email "$EMAIL" \
-        --agree-tos \
-        --no-eff-email \
-        --non-interactive \
-        -d "$DOMAIN_NAME"
-        
-    # #TODO Add --staging flag for testing this is the safe approach to avoid rate limiting and generate fake certificates
     # certbot certonly \
     #     --dns-cloudflare \
     #     --dns-cloudflare-credentials /tmp/cloudflare.ini \
@@ -65,8 +55,18 @@ else
     #     --agree-tos \
     #     --no-eff-email \
     #     --non-interactive \
-    #     --staging \
     #     -d "$DOMAIN_NAME"
+        
+    # #TODO Add --staging flag for testing this is the safe approach to avoid rate limiting and generate fake certificates
+    certbot certonly \
+        --dns-cloudflare \
+        --dns-cloudflare-credentials /tmp/cloudflare.ini \
+        --email "$EMAIL" \
+        --agree-tos \
+        --no-eff-email \
+        --non-interactive \
+        --staging \
+        -d "$DOMAIN_NAME"
     
     if [ $? -eq 0 ]; then
         echo "✓ Certificate generated successfully!"

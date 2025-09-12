@@ -1,0 +1,8 @@
+---
+- name: Reboot EC2 instance
+  hosts: prod
+  become: yes
+  tasks:
+    - name: Reboot the server
+      ansible.builtin.reboot:
+        reboot_timeout: 300

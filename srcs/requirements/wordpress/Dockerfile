@@ -27,10 +27,10 @@ COPY conf/www.conf /etc/php84/php-fpm.d/www.conf
 COPY assets/aws.jpg var/www/html/tmp/aws.jpg
 
 # Download, extract WordPress and Fix ownership of all wp files
-RUN wget https://wordpress.org/wordpress-${WP_VERSION}.tar.gz && \
-    tar -xzvf wordpress-${WP_VERSION}.tar.gz -C /var/www/html --strip-components=1 && \
-    rm wordpress-${WP_VERSION}.tar.gz && \
-    chown -R nginx:nginx /var/www/html
+# RUN wget https://wordpress.org/wordpress-${WP_VERSION}.tar.gz && \
+#     tar -xzvf wordpress-${WP_VERSION}.tar.gz -C /var/www/html --strip-components=1 && \
+#     rm wordpress-${WP_VERSION}.tar.gz && \
+#     chown -R nginx:nginx /var/www/html
 
 # Create symlink from php84 to php
 RUN ln -sf /usr/bin/php84 /usr/bin/php

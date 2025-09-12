@@ -9,10 +9,18 @@ echo "Database connection established!"
 
 cd /var/www/html
 
-#This lines is required if I dont use cloudeflared tunnel
-echo "Giving permission to files"
-find /var/www/html -type d -exec chmod 755 {} \;
-find /var/www/html -type f -exec chmod 644 {} \;
+# #This lines is required if I dont use cloudeflared tunnel
+# echo "Giving permission to files"
+# find /var/www/html -type d -exec chmod 755 {} \;
+# find /var/www/html -type f -exec chmod 644 {} \;
+
+if [ ! -f /var/www/html/wp-config-sample.php ]; then
+	echo "WordPress not found, downloading..."
+	wget https://wordpress.org/wordpress-${WP_VERSION}.tar.gz && \
+	tar -xzvf wordpress-${WP_VERSION}.tar.gz -C /var/www/html --strip-components=1 && \
+    rm wordpress-${WP_VERSION}.tar.gz && \
+    chown -R nginx:nginx /var/www/html
+fi
 
 # Create a new wp-config.php file via wp-cli
 if ! test -f "/var/www/html/wp-config.php"; then
