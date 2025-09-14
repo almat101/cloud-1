@@ -122,7 +122,7 @@ WP_EMAIL: "dev@localhost"
 WP_ROOT_USER: "dev_admin"
 WP_ROOT_PASSWORD: "dev_admin_pass"
 WP_ROOT_EMAIL: "admin@localhost"
-
+WP_VERSION: 6.8.1
 # Access Control (full access for development)
 WP_ADMIN_ACCESSIBLE: "true"
 PMA_ACCESSIBLE: "true"

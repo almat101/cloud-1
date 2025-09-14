@@ -153,21 +153,14 @@ chmod 600 ~/.ssh/ec2_ubuntu.pem
 
 ```bash
 # Deploy to localhost
-ansible-playbook playbooks/deploy.yml --limit dev --ask-vault-pass --ask-become-pass
+ansible-playbook playbooks/deploy_dev.yml --ask-vault-pass --ask-become-pass
 ```
 
 #### Production Deployment
 
 ```bash
 # Deploy to EC2 instance
-ansible-playbook playbooks/deploy.yml --limit prod --ask-vault-pass
-```
-
-#### Specific Role Execution
-
-```bash
-# Run only specific roles
-ansible-playbook playbooks/deploy.yml --limit dev --tags "app_config" --ask-vault-pass
+ansible-playbook playbooks/deploy_prod.yml --ask-vault-pass
 ```
 
 ## Roles Documentation
@@ -209,12 +202,8 @@ ansible-playbook playbooks/deploy.yml --limit dev --tags "app_config" --ask-vaul
 **Key Files**:
 - [`ansible/roles/app_config/tasks/main.yml`](ansible/roles/app_config/tasks/main.yml)
 - [`ansible/roles/app_config/templates/.env.j2`](ansible/roles/app_config/templates/.env.j2)
+- The `.env.j2` file is a Jinja2 template used by Ansible to generate the final `.env` file for your application or services. It allows you to dynamically insert environment variables and secrets (from Ansible variables, vault, or inventory) into the `.env` file during deployment, ensuring each environment (dev, prod, etc.) gets the correct configuration.
 
-**Handler Integration**:
-```yaml
-# Uncomment to enable automatic service restart
-notify: Restart Docker Compose Services
-```
 
 ### docker_app Role
 
@@ -229,14 +218,6 @@ notify: Restart Docker Compose Services
 **Key Files**:
 - [`ansible/roles/docker_app/tasks/main.yml`](ansible/roles/docker_app/tasks/main.yml)
 - [`ansible/roles/docker_app/handlers/main.yml`](ansible/roles/docker_app/handlers/main.yml)
-
-**Handler**:
-```yaml
-- name: Restart Docker Compose Services
-  community.docker.docker_compose_v2:
-    project_src: "{{ app_dest_path_compose }}"
-    state: restarted
-```
 
 ## Environment Management
 
@@ -265,13 +246,14 @@ The following variables are deployed via the `.env.j2` template:
 | `WP_ROOT_USER` | WordPress admin user | `admin` |
 | `WP_ROOT_PASSWORD` | WordPress admin password | `admin_password` |
 | `WP_ROOT_EMAIL` | WordPress admin email | `admin@example.com` |
+| `WP_VERSION` | WordPress version | `6.8.1` |
 | **Access Control** |
 | `WP_ADMIN_ACCESSIBLE` | WordPress admin access control | `true/false` |
 | `PMA_ACCESSIBLE` | phpMyAdmin access control | `true/false` |
 | **phpMyAdmin Configuration** |
 | `BLOWFISH_SECRET` | phpMyAdmin encryption secret (32 chars) | `your_blowfish_secret` |
 | **Optional Features** |
-| `CLOUDFLARE_TUNNEL_TOKEN` | Cloudflare Tunnel token (optional) | `your_tunnel_token` |
+<!-- | ~~`CLOUDFLARE_TUNNEL_TOKEN`~~ | Cloudflare Tunnel token (optional) | `your_tunnel_token` |~~ -->
 | `COMPOSE_BAKE` | Docker Compose build optimization | `true/false` |
 
 ### Required Variables by Environment
@@ -337,6 +319,7 @@ WP_EMAIL={{WP_EMAIL}}
 WP_ROOT_USER={{WP_ROOT_USER}}
 WP_ROOT_PASSWORD={{WP_ROOT_PASSWORD}}
 WP_ROOT_EMAIL={{WP_ROOT_EMAIL}}
+WP_VERSION={{WP_VERSION}}
 
 # Access Control
 WP_ADMIN_ACCESSIBLE={{WP_ADMIN_ACCESSIBLE}}
@@ -357,10 +340,6 @@ COMPOSE_BAKE={{COMPOSE_BAKE}}
 ```bash
 # Test SSH connectivity
 ansible all -m ping --limit prod
-
-# Debug SSH issues
-ansible-playbook playbooks/deploy.yml --limit prod -vvv
-```
 
 #### 2. Docker Permission Errors
 
@@ -383,63 +362,35 @@ chmod 600 .vault_pass
 ansible-playbook playbooks/deploy.yml --vault-password-file .vault_pass
 ```
 
-#### 4. Service Restart Issues
-
-Enable handler notification in [`ansible/roles/app_config/tasks/main.yml`](ansible/roles/app_config/tasks/main.yml):
-
-```yaml
-- name: Deploy .env file from template
-  ansible.builtin.template:
-    src: .env.j2
-    dest: "{{ app_dest_path_compose }}/.env"
-    # ... other parameters
-  notify: Restart Docker Compose Services  # Uncomment this line
-```
-
 ### Debugging Commands
 
 ```bash
 # Check role syntax
-ansible-playbook playbooks/deploy.yml --syntax-check
+ansible-playbook playbooks/deploy_prod.yml --ask-vault-pass --syntax-check
 
 # Dry run deployment
 ansible-playbook playbooks/deploy.yml --check --limit dev
 
-# Verbose output
-ansible-playbook playbooks/deploy.yml --limit dev -vv
+# Devug mode: -vvv enables maximum verbosity in Ansible, showing detailed output for troubleshooting
+ansible-playbook playbooks/deploy_prod.yml  -vvv --ask-vault-pass
 ```
 
 ### Log Locations
 
 - **Docker logs**: `docker logs <container_name>`
-- **System logs**: `/var/log/syslog` or `journalctl -u docker`
+- **System logs**: `/var/log/syslog` or `journalctl -u docker.service`
 
 ## Best Practices
 
 1. **Security**:
    - Always use Ansible Vault for sensitive data
    - Implement proper SSH key management:  
-     - Ensure that SSH private keys are securely generated, stored, and used only by authorized users. This includes setting strict file permissions (e.g., `chmod 600 ~/.ssh/ec2_ubuntu.pem`), never sharing private keys, and using a dedicated non-root user (such as `app_owner_user: ubuntu` in the Ansible inventory) for SSH access to the
+     - Ensure that SSH private keys are securely generated, stored, and used only by authorized users. This includes setting strict file permissions (e.g., `chmod 600 ~/.ssh/*****.pem`), never sharing private keys, and using a dedicated non-root user (such as `app_owner_user: ubuntu` in the Ansible inventory) for SSH access to the
    - Use least privilege principles:
      - `app_owner_user: ubuntu` in Ansible inventory restricts SSH and OS-level access on the server/EC2 to a non-root user.
      - `nginx` user/group in the container Dockerfiles for WordPress/phpMyAdmin ensures application processes run with
 
 ## Advanced Configuration
-
-### Custom Handlers
-
-Create custom handlers for specific restart scenarios:
-
-```yaml
-# Custom handler example
-- name: Restart Specific Service
-  community.docker.docker_compose_v2:
-    project_src: "{{ app_dest_path_compose }}"
-    restarted: true
-    services:
-      - nginx
-      - wordpress
-```
 
 ### Conditional Deployments
 

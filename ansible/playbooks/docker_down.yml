@@ -3,7 +3,7 @@
 # USAGE:
 # You must specify the target host group using the "target" variable.
 # Examples:
-#   ansible-playbook playbooks/docker_down.yml -e "target=dev"
+#   ansible-playbook playbooks/docker_down.yml -e "target=dev" --ask-become-pass
 #   ansible-playbook playbooks/docker_down.yml -e "target=prod"
 #
 # Note: This playbook includes a check to verify if the project directory exists before attempting to run docker compose down.
@@ -19,14 +19,16 @@
     - name: Check if project_src directory exists
       stat:
         path: "{{ app_dest_path_compose}}"
-      register: project_src_dir
+      register: p
 
-    # - name: Debug project_src_dir
-    #   debug:
-    #     var: project_src_dir
+    - name: Debug stat info of the directory
+      debug:
+        # var: p
+        msg: "{{app_dest_path_compose}} is a directory."
+      when: p.stat.exists and p.stat.isdir
     
     - name: Stop and remove containers
       community.docker.docker_compose_v2:
         project_src: "{{ app_dest_path_compose }}"
         state: absent
-      when: project_src_dir.stat.exists and project_src_dir.stat.isdir
+      when: p.stat.exists and p.stat.isdir

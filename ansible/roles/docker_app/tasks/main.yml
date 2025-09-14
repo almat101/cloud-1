@@ -83,7 +83,9 @@
 - name: Wait for HTTP/HTTPS service to respond properly
   # This task checks the /health endpoint over HTTPS to ensure the application is up and responding with HTTP 200.
   # It retries the request multiple times, waiting up to 2 minutes, to allow the service time to start after deployment.
-  # check internal IP ( to ensure service is up)
+  # check internal IP (to ensure service is up)
+  # The internal IP is the private IP address of the EC2 instance inside the AWS VPC (Virtual Private Cloud).
+  # This IP is only accessible from within the same VPC or via SSH.
   ansible.builtin.uri:
     url: "https://{{ ansible_default_ipv4.address | default('localhost') }}/health"
     method: GET

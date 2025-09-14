@@ -1,0 +1,6 @@
+---
+- name: Ping prod hosts
+  hosts: prod
+  tasks:
+    - name: Ping EC2
+      ansible.builtin.ping:
