@@ -26,4 +26,4 @@
   
   vars:
     env_name: "production"
-    app_env:
+    app_env: "prod"

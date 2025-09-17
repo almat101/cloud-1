@@ -111,6 +111,7 @@
   register: health_response_dns
   until: health_response_dns.status == 200
   become: yes
+  when: app_env == "prod" # filter that use app_env and execute this task only if the ec2 is running and it has the site running on it, with localhost the ec2 is not involved
 
 - name: Debug ansible_default_ipv4.address value
   ansible.builtin.debug:

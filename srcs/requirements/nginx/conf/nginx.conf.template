@@ -61,7 +61,7 @@ http {
             
             # Allow only these specific IPs
             # allow 82.55.232.67;     # Home IP
-            allow 172.18.0.0/16;    # Docker network
+            allow 172.16.0.0/12;    # allow all possible Docker network
             # allow 127.0.0.1;        # Localhost
             # allow 151.13.27.220;    # 42 IP
             deny all;               # Block all other IPs
@@ -107,9 +107,9 @@ http {
             # Restrict PMA access by IP
             #allow 82.55.232.67;     # Home IP
             #allow 151.13.27.220;    # School IP
-            #allow 172.18.0.0/16;    # Docker network
+            allow 172.16.0.0/12;    # allow all possible Docker network
             #allow 127.0.0.1;        # Localhost
-            #deny all;
+            deny all;
 
             # Environment variable to control access on pma
             set $pma_access "${PMA_ACCESSIBLE}";
