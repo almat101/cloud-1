@@ -3,14 +3,13 @@
 # USAGE:
 # You must specify the target host group using the "target" variable.
 # Examples:
-#   ansible-playbook playbooks/docker_down.yml -e "target=dev" --ask-become-pass
+#   ansible-playbook playbooks/docker_down.yml -e "target=dev"
 #   ansible-playbook playbooks/docker_down.yml -e "target=prod"
 #
 # Note: This playbook includes a check to verify if the project directory exists before attempting to run docker compose down.
 ---
 - name: Stop and remove all Docker containers
   hosts: "{{ target}}"
-  become: yes
   tasks:
     # - name: Print app_dest_path_compose
     #   debug:
