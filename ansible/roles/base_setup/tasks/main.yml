@@ -72,6 +72,11 @@
   # Questo è importante se app_owner_user è diverso da ansible_user
   when: app_owner_user is defined and app_owner_user != ansible_user
 
+# You can also use the 'cmd' parameter instead of free form format.
+- name: This command will revaluate user permission to docker group 
+  ansible.builtin.shell:
+    cmd: newgrp docker
+
 - name: Ensure Docker service is running and enabled
   ansible.builtin.systemd:
     name: docker
