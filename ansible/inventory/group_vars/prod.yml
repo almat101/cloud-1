@@ -7,7 +7,3 @@ app_owner_user: "ubuntu"
 
 app_dest_path: "/home/{{ app_owner_user}}/{{ app_project }}"
 app_dest_path_compose: "/home/{{ app_owner_user }}/{{ app_project }}/srcs"
-
-ec2_instance:
-  ansible_host: "{{ lookup('env', 'EC2_HOST') }}"
-  ansible_user: ubuntu
