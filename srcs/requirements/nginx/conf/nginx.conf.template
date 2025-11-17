@@ -63,7 +63,7 @@ http {
             # allow 82.55.232.67;     # Home IP
             allow 172.16.0.0/12;    # allow all possible Docker network
             # allow 127.0.0.1;        # Localhost
-            # allow 151.13.27.220;    # 42 IP
+            allow 2.114.8.5;    # 42 IP
             deny all;               # Block all other IPs
             
             # Environment variable to control access 
@@ -106,7 +106,7 @@ http {
 
             # Restrict PMA access by IP
             #allow 82.55.232.67;     # Home IP
-            #allow 151.13.27.220;    # School IP
+            allow 2.114.8.5;    # School IP
             allow 172.16.0.0/12;    # allow all possible Docker network
             #allow 127.0.0.1;        # Localhost
             deny all;
