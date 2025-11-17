@@ -125,7 +125,7 @@
 
 - name: Final deployment status
   ansible.builtin.debug:
-    msg: "✅ Deployment completed successfully - {{ should_rebuild | ternary('with rebuild', 'without rebuild') }}"
+    msg: "Deployment completed successfully - {{ should_rebuild | ternary('with rebuild', 'without rebuild') }}"
 
 # # roles/docker_app/tasks/main.yml
 # ---
