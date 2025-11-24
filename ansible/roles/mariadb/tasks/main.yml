@@ -49,7 +49,7 @@
   register: mariadb_health
   retries: 10
   delay: 5
-  until: mariadb_health.stdout == '"healthy"'
+  until: mariadb_health.stdout == 'healthy'
 
 - name: Display Docker Compose status
   ansible.builtin.debug:
