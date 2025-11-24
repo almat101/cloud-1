@@ -41,4 +41,4 @@
 
 - name: Display wordpress service status
   ansible.builtin.debug:
-    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
+    msg: "Docker Compose services started. Status: {{ wordpress_result }}"

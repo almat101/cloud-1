@@ -42,8 +42,8 @@
     state: present # Assicura che i servizi siano su
   become: yes
   become_user: "{{ app_owner_user }}"
-  register: docker_compose_start_result
+  register: certbot_start_result
 
 - name: Display certbot service status
   ansible.builtin.debug:
-    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
+    msg: "Docker Compose services started. Status: {{ certbot_start_result }}"

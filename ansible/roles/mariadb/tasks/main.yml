@@ -42,7 +42,7 @@
     state: present
   become: yes
   become_user: "{{ app_owner_user }}"
-  register: docker_compose_start_result
+  register: mariadb_start_result
 
 - name: Wait for MariaDB to be healthy
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' mariadb
@@ -53,4 +53,4 @@
 
 - name: Display mariadb service status
   ansible.builtin.debug:
-    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
+    msg: "Docker Compose services started. Status: {{ mariadb_start_result }}"

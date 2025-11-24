@@ -1,0 +1,31 @@
+# Playbook to stop and remove all Docker containers (docker compose down)
+#
+# USAGE:
+# You must specify the target host group using the "target" variable.
+# Examples:
+#   ansible-playbook playbooks/docker_down_prod.yml
+# Note: This playbook includes a check to verify if the project directory exists before attempting to run docker compose down.
+---
+- name: Stop and remove all Docker containers
+  hosts: "prod"
+  tasks:
+    # - name: Print app_dest_path_compose
+    #   debug:
+    #     msg: "app_dest_path_compose = {{ app_dest_path_compose }}"
+
+    - name: Check if project_src directory exists
+      stat:
+        path: "{{ app_dest_path_compose}}"
+      register: p
+
+    - name: Debug stat info of the directory
+      debug:
+        # var: p
+        msg: "{{app_dest_path_compose}} is a directory."
+      when: p.stat.exists and p.stat.isdir
+    
+    - name: Stop and remove containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dest_path_compose }}"
+        state: absent
+      when: p.stat.exists and p.stat.isdir
