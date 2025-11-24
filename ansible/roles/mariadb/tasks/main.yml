@@ -1,0 +1,56 @@
+#####
+
+# This task uses the community.docker.docker_compose_v2 module to control Docker Compose projects.
+# - project_src: specifies the directory containing the docker-compose.yml file.
+# - state: absent      # Equivalent to 'docker compose down' (stops and removes containers and networks)
+# - state: present     # Equivalent to 'docker compose up -d' (starts containers in detached mode)
+# - build: always      # Equivalent to adding '--build' to 'docker compose up', forcing a rebuild of images before starting containers
+# - build: never       # Equivalent to adding '--no-build' to 'docker compose up', never building images before starting containers
+# Reference: https://docs.ansible.com/ansible/latest/collections/community/docker/docker_compose_v2_module.html
+
+
+
+# # roles/mariadb/tasks/main.yml
+---
+- name: Ensure Docker Compose is available (sanity check)
+  ansible.builtin.command: "{{ docker_compose_command }} version"
+  register: docker_compose_version_check
+  changed_when: false
+  failed_when: docker_compose_version_check.rc != 0
+
+- name: Stop and remove existing Docker Compose services if running
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    services: ["mariadb"]
+    state: absent # Arresta e rimuove i container e le reti
+  ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Build Docker Compose services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    services: ["mariadb"]
+    build: always
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Start Docker Compose services
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    services: ["mariadb"]
+    state: present
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  register: docker_compose_start_result
+
+- name: Wait for MariaDB to be healthy
+  ansible.builtin.command: docker inspect --format='{{json .State.Health.Status}}' mariadb
+  register: mariadb_health
+  retries: 10
+  delay: 5
+  until: mariadb_health.stdout == '"healthy"'
+
+- name: Display Docker Compose status
+  ansible.builtin.debug:
+    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"

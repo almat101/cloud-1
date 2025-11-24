@@ -20,6 +20,8 @@
   
   roles:
     - certbot
+    - mariadb
+    
   
   vars:
     env_name: "production"
