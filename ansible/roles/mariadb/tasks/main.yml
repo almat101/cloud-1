@@ -45,7 +45,7 @@
   register: docker_compose_start_result
 
 - name: Wait for MariaDB to be healthy
-  ansible.builtin.command: docker inspect --format='{{json .State.Health.Status}}' mariadb
+  ansible.builtin.command: docker inspect --format='{{.State.Health.Status}}' mariadb
   register: mariadb_health
   retries: 10
   delay: 5
