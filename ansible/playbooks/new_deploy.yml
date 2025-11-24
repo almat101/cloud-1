@@ -15,8 +15,8 @@
   become: yes
   gather_facts: yes
   
-  vars_files:
-    - ../vars/secrets_prod.yml
+  # vars_files:
+  #   - ../vars/secrets_prod.yml
   
   roles:
     - certbot

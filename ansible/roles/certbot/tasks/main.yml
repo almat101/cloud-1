@@ -21,7 +21,7 @@
 - name: Stop and remove existing Docker Compose services if running
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    service: certbot
+    services: ["certbot"]
     state: absent # Arresta e rimuove i container e le reti
   ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
   become: yes
@@ -30,7 +30,7 @@
 - name: Build Docker Compose services
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    sercvice: certbot
+    services: ["certbot"]
     build: always # Forziamo la ricostruzione ogni volta per coerenza
   become: yes
   become_user: "{{ app_owner_user }}"
@@ -38,7 +38,7 @@
 - name: Start Docker Compose services
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
-    service: certbot
+    services: ["certbot"]
     state: present # Assicura che i servizi siano su
   become: yes
   become_user: "{{ app_owner_user }}"
