@@ -6,6 +6,13 @@
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
 
+- name: Wait for Certbot to complete
+  ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Status{{"}}"}}' certbot
+  register: certbot_status
+  retries: 10
+  delay: 5
+  until: certbot_status.stdout == 'exited'
+
 - name: Stop and remove existing nginx service if running
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
