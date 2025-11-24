@@ -22,6 +22,7 @@
     - certbot
     - mariadb
     - wordpress
+    - phpmyadmin
     
   
   vars:
