@@ -1,0 +1,26 @@
+# Production deployment playbook
+#
+# Run this playbook to deploy to the production environment. It uses SSH to connect to the remote production server(s) defined in the [prod] group of the inventory.
+# Make sure your SSH key is configured on this machine (e.g., ~/.ssh/ec2_ubuntu.pem).
+#
+# Recommended command:
+#   ansible-playbook playbooks/deploy_prod.yml --ask-vault-pass
+#
+# - You will be prompted for the Ansible Vault password to decrypt secrets.
+# - The deployment will target the hosts in the [prod] group defined in the inventory.
+# - The roles base_setup, app_code, app_config, and docker_app will be applied.
+
+- name: Deploy cloud-1 separate roles (Production)
+  hosts: prod
+  become: yes
+  gather_facts: yes
+  
+  vars_files:
+    - ../vars/secrets_prod.yml
+  
+  roles:
+    - certbot
+  
+  vars:
+    env_name: "production"
+    app_env: "prod"
