@@ -1,0 +1,44 @@
+# # roles/mariadb/tasks/main.yml
+---
+- name: Ensure Docker Compose is available (sanity check)
+  ansible.builtin.command: "{{ docker_compose_command }} version"
+  register: docker_compose_version_check
+  changed_when: false
+  failed_when: docker_compose_version_check.rc != 0
+
+- name: Stop and remove existing mariadb service if running
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    services: ["mariadb"]
+    state: absent # Arresta e rimuove i container e le reti
+  ignore_errors: yes
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Build the WordPress service
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    services: ["wordpress"]
+    build: always
+  become: yes
+  become_user: "{{ app_owner_user }}"
+
+- name: Start the WordPress service
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dest_path_compose }}"
+    services: ["wordpress"]
+    state: present
+  become: yes
+  become_user: "{{ app_owner_user }}"
+  register: wordpress_start_result
+
+- name: Wait for WordPress to be healthy
+  ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' wordpress
+  register: wordpress_health
+  retries: 10
+  delay: 5
+  until: wordpress_health.stdout == 'healthy'
+
+- name: Display wordpress service status
+  ansible.builtin.debug:
+    msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"

@@ -18,7 +18,7 @@
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
 
-- name: Stop and remove existing Docker Compose services if running
+- name: Stop and remove certbot service if running
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     services: ["certbot"]
@@ -27,7 +27,7 @@
   become: yes
   become_user: "{{ app_owner_user }}"
 
-- name: Build Docker Compose services
+- name: Build certbot service
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     services: ["certbot"]
@@ -35,7 +35,7 @@
   become: yes
   become_user: "{{ app_owner_user }}"
 
-- name: Start Docker Compose services
+- name: Start Certbot service
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     services: ["certbot"]
@@ -44,6 +44,6 @@
   become_user: "{{ app_owner_user }}"
   register: docker_compose_start_result
 
-- name: Display Docker Compose status
+- name: Display certbot service status
   ansible.builtin.debug:
     msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"

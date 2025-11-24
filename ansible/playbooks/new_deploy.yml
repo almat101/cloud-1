@@ -21,6 +21,7 @@
   roles:
     - certbot
     - mariadb
+    - wordpress
     
   
   vars:

@@ -18,16 +18,16 @@
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
 
-- name: Stop and remove existing Docker Compose services if running
+- name: Stop and remove existing mariadb service if running
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     services: ["mariadb"]
     state: absent # Arresta e rimuove i container e le reti
-  ignore_errors: yes # Ignora errori se i servizi non sono ancora attivi
+  ignore_errors: yes
   become: yes
   become_user: "{{ app_owner_user }}"
 
-- name: Build Docker Compose services
+- name: Build mariadb service
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     services: ["mariadb"]
@@ -35,7 +35,7 @@
   become: yes
   become_user: "{{ app_owner_user }}"
 
-- name: Start Docker Compose services
+- name: Start mariadb service
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
     services: ["mariadb"]
@@ -51,6 +51,6 @@
   delay: 5
   until: mariadb_health.stdout == 'healthy'
 
-- name: Display Docker Compose status
+- name: Display mariadb service status
   ansible.builtin.debug:
     msg: "Docker Compose services started. Status: {{ docker_compose_start_result }}"
