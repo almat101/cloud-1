@@ -52,7 +52,7 @@
       - gnupg-agent           # Aggiunto per robustezza con GPG
       - software-properties-common # Aggiunto per robustezza con i repository
       - python3-pip           # Essenziale per le dipendenze Python dei moduli Docker di Ansible
-      # - acl                   # Required for Ansible privilege escalation with unprivileged users
+      - acl                   # Required for Ansible privilege escalation with unprivileged users
     state: present
 
 - name: Create directory for Docker GPG key
