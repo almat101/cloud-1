@@ -17,6 +17,7 @@
   register: docker_compose_version_check
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
+  tags: mariadb
 
 - name: Stop and remove existing mariadb service if running
   community.docker.docker_compose_v2:
@@ -26,6 +27,7 @@
   ignore_errors: yes
   become: yes
   become_user: "{{ app_owner_user }}"
+  tags: mariadb
 
 - name: Build mariadb service
   community.docker.docker_compose_v2:
@@ -34,6 +36,7 @@
     build: always
   become: yes
   become_user: "{{ app_owner_user }}"
+  tags: mariadb
 
 - name: Start mariadb service
   community.docker.docker_compose_v2:
@@ -43,6 +46,7 @@
   become: yes
   become_user: "{{ app_owner_user }}"
   register: mariadb_start_result
+  tags: mariadb
 
 - name: Wait for MariaDB to be healthy
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' mariadb
@@ -50,7 +54,9 @@
   retries: 10
   delay: 5
   until: mariadb_health.stdout == 'healthy'
+  tags: mariadb
 
 - name: Display mariadb service status
   ansible.builtin.debug:
     msg: "Docker Compose services started. Status: {{ mariadb_start_result }}"
+  tags: mariadb
