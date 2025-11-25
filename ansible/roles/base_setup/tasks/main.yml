@@ -1,5 +1,44 @@
 # roles/base_setup/tasks/main.yml
 ---
+- name: Create amatta user with sudo privileges
+  ansible.builtin.user:
+    name: amatta
+    state: present
+    shell: /bin/bash
+    create_home: yes
+    groups: sudo
+    append: yes
+  become: yes
+
+- name: Add amatta to sudoers with NOPASSWD
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers.d/amatta
+    line: 'amatta ALL=(ALL) NOPASSWD:ALL'
+    create: yes
+    mode: '0440'
+    validate: 'visudo -cf %s'
+  become: yes
+
+- name: Ensure .ssh directory exists for amatta user
+  ansible.builtin.file:
+    path: /home/amatta/.ssh
+    state: directory
+    owner: amatta
+    group: amatta
+    mode: '0700'
+  become: yes
+
+- name: Copy SSH authorized_keys from current user to amatta
+  ansible.builtin.copy:
+    src: /home/{{ ansible_user }}/.ssh/authorized_keys
+    dest: /home/amatta/.ssh/authorized_keys
+    remote_src: yes
+    owner: amatta
+    group: amatta
+    mode: '0600'
+  become: yes
+  when: ansible_user != 'amatta'
+
 - name: Update apt cache (initial)
   ansible.builtin.apt:
     update_cache: yes
@@ -64,13 +103,19 @@
     groups: docker
     append: yes
 
+- name: Add amatta user to the docker group
+  ansible.builtin.user:
+    name: amatta
+    groups: docker
+    append: yes
+
 - name: Add application owner user ({{ app_owner_user }}) to the docker group
   ansible.builtin.user:
     name: "{{ app_owner_user }}"
     groups: docker
     append: yes
   # Questo è importante se app_owner_user è diverso da ansible_user
-  when: app_owner_user is defined and app_owner_user != ansible_user
+  when: app_owner_user is defined and app_owner_user != ansible_user and app_owner_user != 'amatta'
 
 #Force ansible to start a new connection
 - name: Reset connection to activate the new group
