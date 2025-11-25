@@ -1,7 +1,7 @@
 ---
 # Production environment (EC2)
 # For Ubuntu
-app_owner_user: "ubuntu"
+app_owner_user: "amatta"
 # For Debian
 #app_owner_user: "admin"
 
