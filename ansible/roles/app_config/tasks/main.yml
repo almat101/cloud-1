@@ -8,5 +8,3 @@
     mode: '0600' # Permessi: solo il proprietario può leggere/scrivere (molto importante per i segreti!)
   #no_log: true # Impedisce che i contenuti sensibili del file appaiano nei log di Ansible
   become: yes
-  become_user: "{{ app_owner_user }}"
-  # notify: Restart Docker Compose Services 
