@@ -1,0 +1,29 @@
+# This playbook removes the specified project folder on the target host group.
+#
+# USAGE:
+# You must specify the target host group using the "target" variable.
+# Examples:
+#   ansible-playbook playbooks/remove_prod_project_folder.yml
+#
+# Note: dev required sudo password
+# Note: The playbook checks if the project directory exists before attempting to remove it.
+---
+- name: Remove project folder
+  hosts: "prod"
+  become: yes
+  tasks:
+    # - name: print folder
+    #   debug:
+    #     msg: "app_dest_path: {{app_dest_path}}"
+    
+    - name: Check if project directory exists
+      stat:
+        path: "{{ app_dest_path}}"
+      register: project_src_dir
+
+    - name: Remove project folder (like executing rm -rf)
+      ansible.builtin.file:
+        path: "{{ app_dest_path }}"
+        state: absent
+      when: project_src_dir.stat.exists and project_src_dir.stat.isdir
+

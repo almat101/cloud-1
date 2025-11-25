@@ -11,7 +11,7 @@
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Status{{"}}"}}' certbot
   register: certbot_status
   retries: 10
-  delay: 5
+  delay: 10
   until: certbot_status.stdout == 'exited'
   tags: nginx
 
@@ -19,7 +19,7 @@
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' wordpress
   register: wordpress_health
   retries: 10
-  delay: 5
+  delay: 10
   until: wordpress_health.stdout == 'healthy'
   tags: nginx
 
@@ -27,12 +27,22 @@
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' phpmyadmin
   register: phpmyadmin_health
   retries: 10
-  delay: 5
+  delay: 10
   until: phpmyadmin_health.stdout == 'healthy'
 
 - name: Debug Certbot status
   ansible.builtin.debug:
     msg: "Certbot container status: {{ certbot_status.stdout }}"
+  tags: nginx
+
+- name: Debug phpmyadmin health status
+  ansible.builtin.debug:
+    msg: "phpmyadmin container status: {{ phpmyadmin_health.stdout }}"
+  tags: nginx
+
+- name: Debug wordpress status health
+  ansible.builtin.debug:
+    msg: "wordpress container status: {{ wordpress_health.stdout }}"
   tags: nginx
 
 - name: Stop and remove existing nginx service if running
@@ -68,7 +78,7 @@
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' nginx
   register: nginx_health
   retries: 10
-  delay: 5
+  delay: 10
   until: nginx_health.stdout == 'healthy'
   tags: nginx
 

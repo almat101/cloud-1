@@ -16,7 +16,7 @@
   gather_facts: yes
   
   vars_files:
-    - ../vars/secrets_prod.yml
+    - ../vars/new_prod_secret.yml
   
   roles:
     - base_setup
