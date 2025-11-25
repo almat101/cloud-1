@@ -4,7 +4,8 @@
 app_project: "cloud1"
 # Comando standard per Docker Compose V2
 docker_compose_command: "docker compose"
-app_repo_url: "git@github.com:almat101/cloud-1.git"
+# app_repo_url: "git@github.com:almat101/cloud-1.git"
+app_repo_url: "https://github.com/almat101/cloud-1.git"
 app_branch: "main"
 
 
