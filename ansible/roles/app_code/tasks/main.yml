@@ -8,7 +8,7 @@
 - name: Copy application code from local machine
   ansible.builtin.copy:
     src: "{{ playbook_dir }}/../../srcs/"
-    dest: "{{ app_dest_path }}"
+    dest: "{{ app_dest_path_compose }}"
     owner: "{{ app_owner_user }}"
     group: "{{ app_owner_user }}"
     mode: 'u=rwX,g=rX,o=rX'
