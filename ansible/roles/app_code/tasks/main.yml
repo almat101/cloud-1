@@ -5,26 +5,25 @@
 # 2. Displays whether the code was updated/cloned or was already up-to-date.
 # 3. Sets a fact (code_was_updated) based on whether the repository was changed, which is later used by other roles (like docker_app) to determine if a rebuild is
 ---
-- name: Clone or pull application code from GitHub
-  ansible.builtin.git:
-    repo: "{{ app_repo_url }}"
+- name: Copy application code from local machine
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../../srcs/"
     dest: "{{ app_dest_path }}"
-    version: "{{ app_branch }}"
-    accept_hostkey: yes  # Important for first-time connections
-    force: yes # da testare questo forza il push anche se ci sono modifiche locali non pushate
-  register: git_clone_result
+    owner: "{{ app_owner_user }}"
+    group: "{{ app_owner_user }}"
+    mode: 'u=rwX,g=rX,o=rX'
+  register: copy_result
   become: yes
-  become_user: "{{ app_owner_user }}"
 
-- name: Verify if code was cloned/updated successfully
+- name: Verify if code was copied/updated successfully
   ansible.builtin.debug:
-    msg: "Code deployment status: {{ git_clone_result.changed | ternary('UPDATED/CLONED', 'ALREADY UP-TO-DATE') }}"
+    msg: "Code deployment status: {{ copy_result.changed | ternary('UPDATED/COPIED', 'ALREADY UP-TO-DATE') }}"
 
 # Store the code change status for later using in docker_app tasks:
 - name: Set fact for code changes
   ansible.builtin.set_fact:
-    code_was_updated: "{{ git_clone_result.changed }}"
+    code_was_updated: "{{ copy_result.changed }}"
     # code_was_updated will be true if:
-    # - The repo is cloned for the first time (changed: true)
-    # - A pull is performed and there are updates (changed: true)
+    # - The files are copied for the first time (changed: true)
+    # - There are differences between source and destination (changed: true)
     # - It will be false if there are no changes to apply (changed: false)
