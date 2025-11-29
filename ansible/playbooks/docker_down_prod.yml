@@ -8,6 +8,7 @@
 ---
 - name: Stop and remove all Docker containers
   hosts: "prod"
+  become: yes
   tasks:
     # - name: Print app_dest_path_compose
     #   debug:
