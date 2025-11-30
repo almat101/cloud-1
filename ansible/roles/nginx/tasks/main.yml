@@ -29,22 +29,18 @@
   retries: 10
   delay: 10
   until: phpmyadmin_health.stdout == 'healthy'
-  tags: nginx
 
 - name: Debug Certbot status
   ansible.builtin.debug:
     msg: "Certbot container status: {{ certbot_status.stdout }}"
-  tags: nginx
 
 - name: Debug phpmyadmin health status
   ansible.builtin.debug:
     msg: "phpmyadmin container status: {{ phpmyadmin_health.stdout }}"
-  tags: nginx
 
 - name: Debug wordpress status health
   ansible.builtin.debug:
     msg: "wordpress container status: {{ wordpress_health.stdout }}"
-  tags: nginx
 
 - name: Stop and remove existing nginx service if running
   community.docker.docker_compose_v2:
@@ -54,7 +50,6 @@
   ignore_errors: yes
   become: yes
   become_user: "{{ app_owner_user }}"
-  tags: nginx
 
 - name: Build the nginx service
   community.docker.docker_compose_v2:
@@ -63,7 +58,6 @@
     build: always
   become: yes
   become_user: "{{ app_owner_user }}"
-  tags: nginx
 
 - name: Start the nginx service
   community.docker.docker_compose_v2:
@@ -73,7 +67,6 @@
   become: yes
   become_user: "{{ app_owner_user }}"
   register: nginx_start_result
-  tags: nginx
 
 - name: Wait for nginx to be healthy
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' nginx
@@ -81,9 +74,7 @@
   retries: 10
   delay: 10
   until: nginx_health.stdout == 'healthy'
-  tags: nginx
 
 - name: Display nginx service status
   ansible.builtin.debug:
     msg: "Docker Compose services started. Status: {{ nginx_start_result }}"
-  tags: nginx

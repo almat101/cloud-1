@@ -19,14 +19,14 @@
     - ../vars/new_prod_secret.yml
   
   roles:
-    - base_setup
-    - app_code
-    - app_config
-    - certbot
-    - mariadb
-    - wordpress
-    - phpmyadmin
-    - nginx
+    - { role : base_setup, tags : base } 
+    - { role : app_code, tags : app_code }
+    - { role : app_config, tags : config }
+    - { role : certbot, tags : certbot }
+    - { role : mariadb, tags : mariadb }
+    - { role : wordpress, tags : wordpress }
+    - { role : phpmyadmin, tags : phpmyadmin }
+    - { role : nginx, tags : nginx }
   
   vars:
     env_name: "production"

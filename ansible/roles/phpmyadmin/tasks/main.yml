@@ -5,7 +5,6 @@
   register: docker_compose_version_check
   changed_when: false
   failed_when: docker_compose_version_check.rc != 0
-  tags: phpmyadmin
 
 - name: Stop and remove existing phpmyadmin service if running
   community.docker.docker_compose_v2:
@@ -15,8 +14,7 @@
   ignore_errors: yes
   become: yes
   become_user: "{{ app_owner_user }}"
-  tags: phpmyadmin
-  
+
 - name: Build the phpmyadmin service
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"
@@ -24,7 +22,6 @@
     build: always
   become: yes
   become_user: "{{ app_owner_user }}"
-  tags: phpmyadmin
 
 - name: Start the phpmyadmin service
   community.docker.docker_compose_v2:
@@ -34,7 +31,6 @@
   become: yes
   become_user: "{{ app_owner_user }}"
   register: phpmyadmin_start_result
-  tags: phpmyadmin
 
 - name: Wait for phpmyadmin to be healthy
   ansible.builtin.command: docker inspect --format='{{"{{"}}.State.Health.Status{{"}}"}}' phpmyadmin
@@ -42,9 +38,7 @@
   retries: 10
   delay: 5
   until: phpmyadmin_health.stdout == 'healthy'
-  tags: phpmyadmin
   
 - name: Display phpmyadmin service status
   ansible.builtin.debug:
     msg: "Docker Compose services started. Status: {{ phpmyadmin_start_result }}"
-  tags: phpmyadmin
