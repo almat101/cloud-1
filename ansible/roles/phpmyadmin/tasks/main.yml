@@ -16,6 +16,7 @@
   become: yes
   become_user: "{{ app_owner_user }}"
   tags: phpmyadmin
+  
 - name: Build the phpmyadmin service
   community.docker.docker_compose_v2:
     project_src: "{{ app_dest_path_compose }}"

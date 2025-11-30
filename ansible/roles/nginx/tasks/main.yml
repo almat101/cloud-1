@@ -29,6 +29,7 @@
   retries: 10
   delay: 10
   until: phpmyadmin_health.stdout == 'healthy'
+  tags: nginx
 
 - name: Debug Certbot status
   ansible.builtin.debug:
